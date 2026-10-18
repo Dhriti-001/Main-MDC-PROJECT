@@ -50,6 +50,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or os.urandom(32).hex()
 
 try:
     ensure_tables()
+    import seed_data
+    seed_data.seed()  # or simply: import seed_data
 except Exception as e:
     print(f"Notice: Database initialization during module load: {e}")
 
