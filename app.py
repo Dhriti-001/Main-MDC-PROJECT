@@ -650,24 +650,29 @@ def login():
             flash("Please enter both username and password.", "danger")
             return render_template('login.html')
 
+        db = get_db()if request.method == 'POST':
+        username = request.form.get('username', '').strip().lower()
+        password = request.form.get('password', '')
+
+        if not username or not password:
+            flash("Please enter both username and password.", "danger")
+            return render_template('login.html')
+
         db = get_db()
-        # --- UNIVERSAL LOGIN BYPASS ---
-        session['user_id'] = 1
-        session['username'] = username
-        session['full_name'] = username.capitalize()
-        session['role'] = 'admin'
-        
-        flash(f"Welcome back, {session['full_name']}!", "success")
-        return redirect(url_for('dashboard'))
+        user = db.execute("SELECT * FROM users WHERE LOWER(username) = ?", (username,)).fetchone()
 
-    return render_template('login.html')
+        if user:
+            pwd_hash = user['password_hash'] if 'password_hash' in user.keys() else ''
+            if pwd_hash and check_password_hash(pwd_hash, password):
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                session['full_name'] = user['full_name']
+                session['role'] = user['role'] if ('role' in user.keys() and user['role']) else 'trainee'
+                flash(f"Welcome back, {session['full_name']}!", "success")
+                return redirect(url_for('dashboard'))
 
-@app.route('/demo-login', methods=['POST'])
-def demo_login():
-    db = get_db()
-    user = db.execute("SELECT * FROM users WHERE username = 'demo'").fetchone()
-    if not user:
-        user = db.execute("SELECT * FROM users WHERE username = 'dhriti'").fetchone()
+        flash("Invalid username or password. Please try again.", "danger")
+        return render_template('login.html')
     if not user:
         cur = db.execute("INSERT INTO users (username, full_name, password_hash, role) VALUES (?, ?, ?, 'trainee')",
                          ('demo', 'Demo Trainee', generate_password_hash('password123')))
@@ -772,7 +777,7 @@ def dashboard():
         next_rationale = f"Dynamic Procedural Drill {next_drill_number}"
 
     return render_template(
-        'Threat_Vector_Dashboard.html',
+        'dashboard.html',
         profile=profile,
         attempts=attempts,
         all_scenarios=all_scenarios,
