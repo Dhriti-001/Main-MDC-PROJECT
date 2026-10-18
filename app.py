@@ -1522,4 +1522,4 @@ if __name__ == '__main__':
     ensure_tables()
     port = int(os.environ.get('PORT', 5000))
     print(f"Threat Vector AI Server running on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
+    #app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
