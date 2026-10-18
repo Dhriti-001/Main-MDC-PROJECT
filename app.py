@@ -772,7 +772,7 @@ def dashboard():
         next_rationale = f"Dynamic Procedural Drill {next_drill_number}"
 
     return render_template(
-        'dashboard.html',
+        'Threat_Vector_Dashboard.html',
         profile=profile,
         attempts=attempts,
         all_scenarios=all_scenarios,
