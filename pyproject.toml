@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "Main-MDC-PROJECT-main/app.py"
