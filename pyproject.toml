@@ -1,2 +1,2 @@
 [tool.vercel]
-entrypoint = "Main-MDC-PROJECT-main/app.py"
+entrypoint = "Main-MDC-PROJECT-main.app:app"
