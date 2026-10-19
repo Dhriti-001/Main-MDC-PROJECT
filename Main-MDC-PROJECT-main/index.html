@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Vector | AI Social Engineering Detection & Threat Defense Console</title>
+    <!-- Chart.js for Cognitive Risk Radar & Visual Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #0B1120;
+            --bg-surface: #0F172A;
+            --bg-card: #1E293B;
+            --bg-card-hover: #334155;
+            --bg-input: #0F172A;
+            
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            
+            --brand-blue: #3B82F6;
+            --brand-cyan: #06B6D4;
+            --brand-navy: #0F2744;
+            
+            --accent-emerald: #10B981;
+            --accent-emerald-bg: rgba(16, 185, 129, 0.15);
+            --accent-emerald-border: rgba(16, 185, 129, 0.35);
+            
+            --accent-rose: #F43F5E;
+            --accent-rose-bg: rgba(244, 63, 94, 0.15);
+            --accent-rose-border: rgba(244, 63, 94, 0.35);
+            
+            --accent-amber: #F59E0B;
+            --accent-amber-bg: rgba(245, 158, 11, 0.15);
+            --accent-amber-border: rgba(245, 158, 11, 0.35);
+            
+            --accent-purple: #8B5CF6;
+            
+            --border-subtle: #334155;
+            --border-highlight: #475569;
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.55;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* TOP NAVIGATION */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0.75rem 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 1.25rem; }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            cursor: pointer;
+        }
+
+        .brand-icon {
+            background: linear-gradient(135deg, #1E3A8A, #06B6D4);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+        }
+
+        .trainer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #93C5FD;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 8px var(--accent-emerald);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.6; }
+        }
+
+        .nav-links { display: flex; gap: 0.4rem; align-items: center; list-style: none; flex-wrap: wrap; }
+        .nav-item {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.45rem 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .nav-item:hover {
+            color: var(--text-main);
+            background: var(--bg-card);
+            border-color: var(--border-subtle);
+        }
+
+        .nav-item.active {
+            color: #fff;
+            background: #2563EB;
+            border-color: #3B82F6;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-signout {
+            background: transparent;
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #FDA4AF;
+            font-size: 0.82rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-weight: 600;
+        }
+        .btn-signout:hover {
+            background: rgba(244, 63, 94, 0.2);
+            color: #FFF;
+        }
+
+        /* CONTAINER & VIEWS */
+        .container {
+            max-width: 1200px;
+            margin: 1.75rem auto;
+            padding: 0 1.25rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .app-view { display: none; }
+        .app-view.active { display: block; animation: fadeIn 0.25s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary { background: #2563EB; color: white; border-color: #3B82F6; }
+        .btn-primary:hover { background: #1D4ED8; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn-cyan { background: #0891B2; color: white; border-color: #06B6D4; }
+        .btn-cyan:hover { background: #0E7490; transform: translateY(-1px); }
+        .btn-secondary { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-subtle); }
+        .btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-highlight); }
+        .btn-success { background: #059669; color: white; border-color: #10B981; }
+        .btn-success:hover { background: #047857; transform: translateY(-1px); }
+        .btn-danger { background: #E11D48; color: white; border-color: #F43F5E; }
+        .btn-danger:hover { background: #BE123C; transform: translateY(-1px); }
+        .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.82rem; }
+
+        /* CARDS & METRICS */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3B82F6, #06B6D4);
+        }
+
+        .metric-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.75px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .metric-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 0.4rem 0;
+        }
+
+        .metric-sub {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* QUICK LAUNCHPAD */
+        .launchpad-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .launch-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .launch-card:hover {
+            border-color: var(--brand-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.6);
+            background: #141E33;
+        }
+
+        .launch-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+        }
+
+        .launch-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.35rem;
+        }
+
+        .launch-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        /* MODALS */
+        .modal-backdrop {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+        }
+
+        .modal-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 680px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalScale 0.2s ease-out;
+        }
+
+        @keyframes modalScale {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 1.15rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #162032;
+        }
+
+        .modal-body { padding: 1.5rem; }
+        .btn-close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .btn-close-modal:hover { color: #fff; }
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom: 1.15rem; }
+        .form-label {
+            display: block;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.7rem 0.95rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-main);
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .form-control:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* DROPZONE */
+        .dropzone {
+            border: 2px dashed var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1.5rem 1rem;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.6);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dropzone:hover {
+            border-color: var(--brand-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th {
+            background: #162032;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-main);
+        }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        /* FOOTER */
+        footer {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: auto;
+        }
+
+        /* TOAST */
+        #toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: #1E293B;
+            border: 1px solid var(--brand-blue);
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideInRight 0.2s ease-out;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION (VISIBLE AFTER SIGN-IN) -->
+    <nav class="navbar" id="app-navbar" style="display: none;">
+        <div class="nav-left">
+            <a class="nav-brand" onclick="navigateTo('dashboard')">
+                <div class="brand-icon">🛡️</div>
+                <div>
+                    <div>Threat Vector</div>
+                </div>
+            </a>
+            <div class="trainer-badge" id="nav-trainer-display">
+                <span class="status-dot"></span>
+                <span id="nav-trainer-name">Active Trainer: Dhriti</span>
+            </div>
+        </div>
+
+        <ul class="nav-links">
+            <li><a class="nav-item active" data-route="dashboard" onclick="navigateTo('dashboard')">📊 Dashboard</a></li>
+            <li><a class="nav-item" data-route="drills" onclick="navigateTo('drills')">⚡ Drills</a></li>
+            <li><a class="nav-item" data-route="phishing" onclick="navigateTo('phishing')">🎣 Phishing</a></li>
+            <li><a class="nav-item" data-route="ctf" onclick="navigateTo('ctf')">🚩 CTF</a></li>
+            <li><a class="nav-item" data-route="war-room" onclick="navigateTo('war-room')">🚨 War Room</a></li>
+            <li><a class="nav-item" data-route="ai-analyst" onclick="navigateTo('ai-analyst')">🧠 AI Analyst</a></li>
+            <li><a class="nav-item" data-route="skills" onclick="navigateTo('skills')">🎖️ Skills</a></li>
+            <li><a class="nav-item" data-route="leaderboard" onclick="navigateTo('leaderboard')">🏆 Leaderboard</a></li>
+            <li><button class="nav-item btn-sm" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #67E8F9;" onclick="openInspectorModal()">🔍 Link Inspector</button></li>
+            <li><button class="btn-signout" onclick="handleSignOut()">Sign Out</button></li>
+        </ul>
+    </nav>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container"></div>
+
+    <main class="container">
+
+        <!-- ========================================== -->
+        <!-- VIEW 0: SIGN-IN / LOGIN (DEFAULT INITIAL)  -->
+        <!-- ========================================== -->
+        <section id="login-view" class="app-view active">
+            <div style="max-width: 460px; margin: 3.5rem auto; text-align: center;">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: linear-gradient(135deg, #1E3A8A, #06B6D4); font-size: 2rem; margin-bottom: 1.25rem; box-shadow: 0 0 24px rgba(6, 182, 212, 0.4);">
+                    🛡️
+                </div>
+                <h1 style="font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.35rem;">Threat Vector</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">
+                    AI-Driven Adaptive Social Engineering Threat Defense Console
+                </p>
+
+                <div class="card" style="text-align: left; padding: 2rem; border-color: #334155; box-shadow: var(--shadow-lg);">
+                    <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🔐</span> Trainer / Defender Sign-In
+                    </h2>
+
+                    <form id="login-form" onsubmit="handleLoginSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="login-username">Trainer Username</label>
+                            <input type="text" id="login-username" class="form-control" placeholder="e.g. Dhriti" required autofocus>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="login-password">Access Key / Password</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="••••••••" value="demo123" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+                            Sign In to Command Console &rarr;
+                        </button>
+                    </form>
+
+                    <div style="position: relative; text-align: center; margin: 1.5rem 0;">
+                        <hr style="border: none; border-top: 1px solid var(--border-subtle);">
+                        <span style="position: absolute; top: -0.65rem; left: 50%; transform: translateX(-50%); background: var(--bg-surface); padding: 0 0.75rem; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase;">or quick entry</span>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" style="width: 100%; font-size: 0.88rem;" onclick="quickLoginDemo()">
+                        ⚡ One-Click Demo Sign-In (Ms. Dhriti Gupta)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: CENTRAL DASHBOARD                 -->
+        <!-- ========================================== -->
+        <section id="dashboard-view" class="app-view">
+            <!-- DASHBOARD WELCOME HEADER -->
+            <div style="background: linear-gradient(135deg, #131F37, #0B132B); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.75rem 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--brand-cyan); text-transform: uppercase; letter-spacing: 0.5px;">Unified Security Operations</span>
+                    <h1 style="font-size: 1.85rem; font-weight: 800; margin-top: 0.2rem;" id="dash-greeting">Welcome, Active Trainer</h1>
+                    <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.25rem;">
+                        Real-time cognitive resilience, tactical cyber missions, and telemetry inspector.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary" onclick="navigateTo('drills')">⚡ Start Simulation Drill</button>
+                    <button class="btn btn-secondary" onclick="openInspectorModal()">🔍 Link Inspector</button>
+                </div>
+            </div>
+
+            <!-- 1. HIGH-LEVEL METRICS BAR -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-title">Composite Risk Score</span>
+                    <div class="metric-val" id="metric-risk-val" style="color: var(--accent-emerald);">24.5 <span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">/ 100</span></div>
+                    <div class="metric-sub" id="metric-risk-label">🟢 Low Risk (High Cognitive Vigilance)</div>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-title">Decision Accuracy</span>
+                    <div class="metric-val" id="metric-acc-val" style="color: var(--brand-cyan);">92.4%</div>
+                    <div class="metric-sub" id="metric-acc-sub">Across sequential diagnostic challenges</div>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-title">Primary Vulnerability Vector</span>
+                    <div class="metric-val" id="metric-weak-val" style="font-size: 1.45rem; color: #FBBF24;">Urgency / Pressure</div>
+                    <div class="metric-sub">Adaptive engine dynamically reinforces this vector</div>
+                </div>
+            </div>
+
+            <!-- 2. QUICK LAUNCHPAD (ONLY THE 8 ALLOWED FEATURES) -->
+            <div style="margin-bottom: 1.25rem;">
+                <h2 style="font-size: 1.35rem; font-weight: 700;">Tactical Defense Launchpad</h2>
+                <p style="color: var(--text-muted); font-size: 0.88rem;">Direct access to all 8 integrated cybersecurity defense modules.</p>
+            </div>
+
+            <div class="launchpad-grid">
+                <!-- 1. DRILLS -->
+                <div class="launch-card" onclick="navigateTo('drills')">
+                    <div>
+                        <span class="launch-icon">⚡</span>
+                        <div class="launch-title">Simulation Drills</div>
+                        <div class="launch-desc">Dynamic cognitive social-engineering drills evaluating urgency, authority impersonation, and fake links.</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" style="width: 100%;">Start Simulation Drill ⚡</button>
+                </div>
+
+                <!-- 2. PHISHING -->
+                <div class="launch-card" onclick="navigateTo('phishing')">
+                    <div>
+                        <span class="launch-icon">🎣</span>
+                        <div class="launch-title">Phishing Range</div>
+                        <div class="launch-desc">Inspect realistic Microsoft 365, courier, and executive email attacks with fake login portal previews.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">Open Phishing Range 🎣</button>
+                </div>
+
+                <!-- 3. CTF -->
+                <div class="launch-card" onclick="navigateTo('ctf')">
+                    <div>
+                        <span class="launch-icon">🚩</span>
+                        <div class="launch-title">CTF Missions</div>
+                        <div class="launch-desc">Hands-on cyber range spanning Apache access logs, base64 ciphers, DNS tunneling, and PowerShell scripts.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">Launch Cyber Range 🚩</button>
+                </div>
+
+                <!-- 4. WAR ROOM -->
+                <div class="launch-card" onclick="navigateTo('war-room')">
+                    <div>
+                        <span class="launch-icon">🚨</span>
+                        <div class="launch-title">War Room</div>
+                        <div class="launch-desc">Branching incident response simulations covering ransomware outbreaks and supply chain tampering.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">Enter War Room 🚨</button>
+                </div>
+
+                <!-- 5. AI ANALYST -->
+                <div class="launch-card" onclick="navigateTo('ai-analyst')">
+                    <div>
+                        <span class="launch-icon">🧠</span>
+                        <div class="launch-title">AI Analyst</div>
+                        <div class="launch-desc">MITRE ATT&CK technique mapping, adversary psychology profiling, and explainable diagnostic breakdowns.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">Consult AI Analyst 🧠</button>
+                </div>
+
+                <!-- 6. SKILLS -->
+                <div class="launch-card" onclick="navigateTo('skills')">
+                    <div>
+                        <span class="launch-icon">🎖️</span>
+                        <div class="launch-title">Skills & Badges</div>
+                        <div class="launch-desc">5 core competency matrices, unlockable achievement badges, and verifiable certificates of completion.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">View Skills Matrix 🎖️</button>
+                </div>
+
+                <!-- 7. LEADERBOARD -->
+                <div class="launch-card" onclick="navigateTo('leaderboard')">
+                    <div>
+                        <span class="launch-icon">🏆</span>
+                        <div class="launch-title">Leaderboard</div>
+                        <div class="launch-desc">Global HackerRank-style CTF rankings tracking accuracy, drill completion speed, and composite score.</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">Inspect Leaderboard 🏆</button>
+                </div>
+
+                <!-- 8. LINK INSPECTOR -->
+                <div class="launch-card" onclick="openInspectorModal()">
+                    <div>
+                        <span class="launch-icon">🔍</span>
+                        <div class="launch-title">Link Inspector</div>
+                        <div class="launch-desc">Real-time multi-factor scanning engine analyzing text, suspicious URLs, double extensions, and PDF headers.</div>
+                    </div>
+                    <button class="btn btn-cyan btn-sm" style="width: 100%;">Launch Inspector 🔍</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: DEDICATED DRILLS VIEW             -->
+        <!-- ========================================== -->
+        <section id="drills-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🎯 Adaptive Simulation Drill</span>
+                        <span id="drill-id-badge" style="background: #2563EB; font-size: 0.85rem; padding: 0.2rem 0.6rem; border-radius: 999px;">#1</span>
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Sequential threat detection. Examine the communication and render your security verdict.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <span class="trainer-badge" id="drill-channel-badge">CHANNEL: EMAIL</span>
+                    <span class="trainer-badge" id="drill-diff-badge" style="border-color: #F59E0B; color: #FBBF24;">DIFFICULTY: MEDIUM</span>
+                </div>
+            </div>
+
+            <!-- AI RECOMMENDATION RATIONALE -->
+            <div id="drill-rationale" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: var(--radius-sm); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: #E0F2FE;">
+                <span style="font-size: 1.25rem;">🤖</span>
+                <span id="drill-rationale-text"><strong>AI Recommendation:</strong> Initial Diagnostic: Establishing baseline vigilance.</span>
+            </div>
+
+            <!-- COMMUNICATION MOCKUP VIEWPORT -->
+            <div id="drill-viewport" style="margin-bottom: 1.5rem;"></div>
+
+            <!-- DECISION & STOPWATCH BAR -->
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.95rem; font-weight: 600;">
+                    <span>⏱️ Reaction Stopwatch:</span>
+                    <span id="drill-stopwatch" style="font-family: monospace; font-size: 1.3rem; color: var(--brand-cyan);">0.0s</span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button id="btn-drill-safe" class="btn btn-success" onclick="recordDrillChoice(false)">
+                        🛡️ Mark as Safe (Legitimate)
+                    </button>
+                    <button id="btn-drill-threat" class="btn btn-danger" onclick="recordDrillChoice(true)">
+                        🚨 Report Threat (Social Engineering)
+                    </button>
+                </div>
+            </div>
+
+            <!-- EXPLAINABLE AI (XAI) FEEDBACK SECTION (DYNAMICALLY REVEALED) -->
+            <div id="drill-feedback-box" style="display: none; margin-bottom: 3rem;">
+                <div class="card" style="border-left: 5px solid var(--brand-cyan); margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h3 id="drill-fb-title" style="font-size: 1.25rem; font-weight: 800;">Diagnostic Feedback</h3>
+                        <button class="btn btn-primary" onclick="loadNextSequentialDrill()">Next Sequential Drill &rarr;</button>
+                    </div>
+
+                    <div id="drill-fb-banner" style="padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                        <div id="drill-fb-icon" style="font-size: 2rem;">🛡️</div>
+                        <div>
+                            <div id="drill-fb-headline" style="font-weight: 700; font-size: 1.1rem;">Verdict Result</div>
+                            <div id="drill-fb-desc" style="color: var(--text-muted); font-size: 0.9rem;">Details</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div class="card" style="padding: 0.85rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Your Verdict</span>
+                            <div id="drill-fb-user-choice" style="font-weight: 700; font-size: 1rem; margin-top: 0.2rem;">-</div>
+                        </div>
+                        <div class="card" style="padding: 0.85rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Ground Truth</span>
+                            <div id="drill-fb-truth" style="font-weight: 700; font-size: 1rem; margin-top: 0.2rem;">-</div>
+                        </div>
+                        <div class="card" style="padding: 0.85rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Reaction Time</span>
+                            <div id="drill-fb-time" style="font-weight: 700; font-size: 1rem; margin-top: 0.2rem;">-</div>
+                        </div>
+                        <div class="card" style="padding: 0.85rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">ML Confidence</span>
+                            <div id="drill-fb-confidence" style="font-weight: 700; font-size: 1rem; color: var(--brand-cyan); margin-top: 0.2rem;">95.4%</div>
+                        </div>
+                    </div>
+
+                    <!-- RED FLAGS -->
+                    <div id="drill-fb-redflags-wrapper" style="margin-bottom: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; color: #FDA4AF; margin-bottom: 0.5rem;">🚩 Detected Red Flags:</h4>
+                        <div id="drill-fb-redflags-list" style="display: flex; flex-direction: column; gap: 0.4rem;"></div>
+                    </div>
+
+                    <!-- EXPLANATION & MICRO-LESSON -->
+                    <div style="background: rgba(15, 23, 42, 0.7); border-radius: var(--radius-sm); padding: 1rem 1.25rem; border: 1px solid var(--border-subtle);">
+                        <strong style="color: var(--brand-cyan); font-size: 0.9rem;">Deep Explainable AI Analysis:</strong>
+                        <p id="drill-fb-explanation" style="font-size: 0.9rem; color: var(--text-main); margin-top: 0.35rem; line-height: 1.6;"></p>
+                        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle);">
+                            <strong style="color: var(--accent-emerald); font-size: 0.9rem;">💡 Micro-Lesson Takeaway:</strong>
+                            <p id="drill-fb-microlesson" style="font-size: 0.88rem; color: #CBD5E1; margin-top: 0.25rem;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: PHISHING DEFENSE RANGE            -->
+        <!-- ========================================== -->
+        <section id="phishing-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800;">🎣 Realistic Phishing Defense Range</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Interactive enterprise lures, raw header analysis, and sandboxed login portal previews.</p>
+                </div>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="filterPhishing('all')">All</button>
+                    <button class="btn btn-secondary btn-sm" onclick="filterPhishing('Beginner')">Beginner</button>
+                    <button class="btn btn-secondary btn-sm" onclick="filterPhishing('Intermediate')">Intermediate</button>
+                    <button class="btn btn-secondary btn-sm" onclick="filterPhishing('Advanced')">Advanced</button>
+                </div>
+            </div>
+
+            <!-- PHISHING SCENARIOS SELECTOR -->
+            <div id="phishing-cards-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;"></div>
+
+            <!-- ACTIVE PHISHING INSPECTION MODAL / PANEL -->
+            <div id="phishing-active-panel" class="card" style="display: none; border-color: var(--brand-blue); margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 id="phish-title" style="font-size: 1.3rem; font-weight: 800;">Phishing Scenario</h3>
+                    <span id="phish-tier-badge" class="trainer-badge">TIER</span>
+                </div>
+
+                <!-- RAW EMAIL HEADER VIEWER -->
+                <div style="background: #111C2E; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1rem 1.25rem; margin-bottom: 1.25rem; font-size: 0.88rem;">
+                    <div style="margin-bottom: 0.35rem;"><span style="color: var(--text-muted); width: 85px; display: inline-block;">From:</span> <strong id="phish-from">-</strong></div>
+                    <div style="margin-bottom: 0.35rem;"><span style="color: var(--text-muted); width: 85px; display: inline-block;">Reply-To:</span> <span id="phish-replyto" style="color: #F87171;">-</span></div>
+                    <div style="margin-bottom: 0.35rem;"><span style="color: var(--text-muted); width: 85px; display: inline-block;">Subject:</span> <strong id="phish-subject" style="color: #F8FAFC;">-</strong></div>
+                    <div><span style="color: var(--text-muted); width: 85px; display: inline-block;">Destination:</span> <span id="phish-dest-url" style="color: var(--brand-cyan); word-break: break-all;">-</span></div>
+                </div>
+
+                <!-- EMAIL BODY CONTENT -->
+                <div id="phish-body-content" style="background: #FFFFFF; color: #0F172A; border-radius: var(--radius-sm); padding: 1.75rem; margin-bottom: 1.5rem; line-height: 1.6;"></div>
+
+                <!-- SIMULATED PORTAL ACTION -->
+                <div id="phish-portal-trigger" style="margin-bottom: 1.5rem; display: none;">
+                    <button class="btn btn-secondary" onclick="openSimulatedPortal()" style="border-color: #F59E0B; color: #FBBF24;">
+                        👁️ Preview Destination Portal (Sandboxed)
+                    </button>
+                </div>
+
+                <!-- INDICATOR CHECKLIST -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Select Observed Red-Flag Indicators:</h4>
+                    <div id="phish-indicators-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                </div>
+
+                <!-- VERDICT BUTTONS -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <button class="btn btn-secondary" onclick="closePhishingActivePanel()">&larr; Return to Phishing Catalog</button>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn btn-success" onclick="submitPhishVerdict(false)">Mark as Legitimate 🛡️</button>
+                        <button class="btn btn-danger" onclick="submitPhishVerdict(true)">Report as Phishing 🎣</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: CTF TACTICAL MISSIONS             -->
+        <!-- ========================================== -->
+        <section id="ctf-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800;">🚩 CTF Mission Mode & Tactical Cyber Range</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Analyze real telemetry, deobfuscate payloads, and capture security flags.</p>
+                </div>
+                <div class="trainer-badge" id="ctf-points-tracker" style="border-color: #8B5CF6; color: #C4B5FD;">
+                    <span>🏆 Total CTF Points: <strong id="ctf-score-display">0</strong> PTS</span>
+                </div>
+            </div>
+
+            <!-- CTF CATEGORY TABS -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('ALL')">All Missions</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('LOGS')">Log Analysis</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('CRYPTO')">Cryptography</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('NETSEC')">Network Security</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('FORENSICS')">Forensics</button>
+                <button class="btn btn-secondary btn-sm" onclick="filterCtf('THREAT_ID')">Threat Identification</button>
+            </div>
+
+            <!-- CTF CHALLENGES GRID -->
+            <div id="ctf-challenges-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.25rem;"></div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 5: INCIDENT RESPONSE WAR ROOM        -->
+        <!-- ========================================== -->
+        <section id="war-room-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800;">🚨 Incident Response War Room</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Branching multi-stage breach containment drills with live NIST SP 800-61 Rev. 2 debriefs.</p>
+                </div>
+            </div>
+
+            <div id="war-room-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;"></div>
+
+            <!-- ACTIVE MISSION STAGE RUNNER -->
+            <div id="war-room-active-stage" class="card" style="display: none; border-color: #E11D48;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div>
+                        <span id="wr-threat-actor" class="trainer-badge" style="border-color: #F43F5E; color: #FDA4AF;">THREAT ACTOR</span>
+                        <h3 id="wr-scenario-title" style="font-size: 1.35rem; font-weight: 800; margin-top: 0.35rem;">Operation Title</h3>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <span class="trainer-badge">Security: <strong id="wr-security-score" style="color: var(--accent-emerald);">100</strong>%</span>
+                        <span class="trainer-badge" style="border-color: #F43F5E; color: #FDA4AF;">Penalty: <strong id="wr-penalty-score">0</strong>%</span>
+                    </div>
+                </div>
+
+                <div style="background: #111C2E; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1.15rem 1.35rem; margin-bottom: 1.5rem;">
+                    <div id="wr-stage-heading" style="font-size: 1.05rem; font-weight: 700; color: var(--brand-cyan); margin-bottom: 0.35rem;">Stage 1: Alert Triage</div>
+                    <p id="wr-stage-situation" style="font-size: 0.92rem; color: #E2E8F0; line-height: 1.6;"></p>
+                </div>
+
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.85rem;">Select Immediate Defensive Action:</h4>
+                <div id="wr-options-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;"></div>
+
+                <div id="wr-consequence-box" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 1rem 1.25rem; margin-bottom: 1.25rem;">
+                    <strong id="wr-consequence-status" style="color: var(--accent-emerald);">Action Consequence:</strong>
+                    <p id="wr-consequence-text" style="font-size: 0.9rem; margin-top: 0.25rem;"></p>
+                    <button class="btn btn-primary btn-sm" id="btn-wr-next-stage" style="margin-top: 0.75rem;">Advance to Next Stage &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 6: AI THREAT ANALYST                 -->
+        <!-- ========================================== -->
+        <section id="ai-analyst-view" class="app-view">
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.6rem; font-weight: 800;">🧠 AI Threat Analyst & Diagnostic Intelligence</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">MITRE ATT&CK technique mapping, adversary psychology profiling, and real-time custom telemetry scanning.</p>
+            </div>
+
+            <!-- CUSTOM TELEMETRY SCANNER -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem;">🔬 Interactive Telemetry Inspector</h3>
+                <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">Paste suspicious email content, chat excerpts, or server logs to generate an AI diagnostic report:</p>
+                
+                <textarea id="ai-telemetry-input" class="form-control" rows="3" placeholder="e.g. 'URGENT: Your university account is scheduled for deactivation in 15 minutes. Verify at http://storage-admin.xyz/verify'"></textarea>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="loadAnalystSample(1)">Sample: M365 Spoof</button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAnalystSample(2)">Sample: Gift Card BEC</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="runAnalystScan()">⚡ Generate Structured Threat Report</button>
+                </div>
+
+                <!-- REPORT OUTPUT -->
+                <div id="ai-report-output" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);"></div>
+            </div>
+
+            <!-- MITRE ATT&CK REFERENCE MATRIX -->
+            <div class="card">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">🗺️ Active MITRE ATT&CK Matrix Reference</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Technique ID</th>
+                                <th>Name</th>
+                                <th>Tactic</th>
+                                <th>CVSS Severity</th>
+                                <th>Common Vector</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong style="color: var(--brand-cyan);">T1566.002</strong></td>
+                                <td>Spearphishing Link</td>
+                                <td>Initial Access</td>
+                                <td><span class="trainer-badge" style="border-color: #F43F5E; color: #FDA4AF;">8.8 HIGH</span></td>
+                                <td>Lookalike URLs & Typosquatting</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--brand-cyan);">T1566.001</strong></td>
+                                <td>Spearphishing Attachment</td>
+                                <td>Initial Access</td>
+                                <td><span class="trainer-badge" style="border-color: #E11D48; color: #FDA4AF;">9.2 CRITICAL</span></td>
+                                <td>Double Extension (.pdf.exe)</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--brand-cyan);">T1078.004</strong></td>
+                                <td>Cloud Accounts / OAuth Abuse</td>
+                                <td>Persistence</td>
+                                <td><span class="trainer-badge" style="border-color: #F59E0B; color: #FCD34D;">7.5 HIGH</span></td>
+                                <td>Illicit Consent Grants</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--brand-cyan);">T1059.001</strong></td>
+                                <td>PowerShell Execution</td>
+                                <td>Execution</td>
+                                <td><span class="trainer-badge" style="border-color: #E11D48; color: #FDA4AF;">9.0 CRITICAL</span></td>
+                                <td>-EncodedCommand Persistence</td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color: var(--brand-cyan);">T1048.003</strong></td>
+                                <td>Exfiltration Over Alternative Protocol</td>
+                                <td>Exfiltration</td>
+                                <td><span class="trainer-badge" style="border-color: #F59E0B; color: #FCD34D;">7.8 HIGH</span></td>
+                                <td>DNS Tunneling & Encrypted Sockets</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 7: SKILLS & CERTIFICATION            -->
+        <!-- ========================================== -->
+        <section id="skills-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800;">🎖️ Skills, Badges & Certification</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Competency progression, earned badges, and verifiable credentials.</p>
+                </div>
+                <button class="btn btn-success" onclick="openCertificateModal()">📜 Generate Official Certificate</button>
+            </div>
+
+            <!-- 5 COMPETENCY DOMAIN BARS -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem;">Core Defense Competencies</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                            <span>🎣 Phishing Detection & Header Analysis</span>
+                            <strong style="color: var(--brand-cyan);">95% Mastery</strong>
+                        </div>
+                        <div style="height: 8px; background: #0F172A; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 95%; height: 100%; background: var(--brand-cyan);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                            <span>🧩 Defensive Cryptography & Deobfuscation</span>
+                            <strong style="color: var(--brand-blue);">85% Mastery</strong>
+                        </div>
+                        <div style="height: 8px; background: #0F172A; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 85%; height: 100%; background: var(--brand-blue);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                            <span>🚨 Incident Response & Containment</span>
+                            <strong style="color: var(--accent-emerald);">90% Mastery</strong>
+                        </div>
+                        <div style="height: 8px; background: #0F172A; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 90%; height: 100%; background: var(--accent-emerald);"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                            <span>📜 Digital Forensics & Log Telemetry</span>
+                            <strong style="color: #A855F7;">80% Mastery</strong>
+                        </div>
+                        <div style="height: 8px; background: #0F172A; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 80%; height: 100%; background: #A855F7;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.35rem;">
+                            <span>🛡️ Cognitive Threat Bias Neutralization</span>
+                            <strong style="color: #F59E0B;">88% Mastery</strong>
+                        </div>
+                        <div style="height: 8px; background: #0F172A; border-radius: 999px; overflow: hidden;">
+                            <div style="width: 88%; height: 100%; background: #F59E0B;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BADGES SHOWCASE -->
+            <div style="margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 700;">Achievement Badges</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🎯</div>
+                    <div>
+                        <div style="font-weight: 700;">First Step</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Completed initial baseline drill.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🦅</div>
+                    <div>
+                        <div style="font-weight: 700;">Eagle Eye</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">&gt;90% decision accuracy.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🎣</div>
+                    <div>
+                        <div style="font-weight: 700;">Phish Buster</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Identified 3+ phishing attacks.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🚩</div>
+                    <div>
+                        <div style="font-weight: 700;">Flag Captor</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Captured first tactical flag.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🧩</div>
+                    <div>
+                        <div style="font-weight: 700;">Master Cryptanalyst</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Solved crypto & log analysis.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🚨</div>
+                    <div>
+                        <div style="font-weight: 700;">Incident Commander</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Resolved War Room breach.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🔥</div>
+                    <div>
+                        <div style="font-weight: 700;">Daily Sentinel</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Active multi-day defense streak.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.2rem;">🛡️</div>
+                    <div>
+                        <div style="font-weight: 700;">Cyber Centurion</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">&gt;1,000 Total XP points earned.</div>
+                        <span class="trainer-badge" style="font-size: 0.72rem; margin-top: 0.35rem; padding: 0.15rem 0.5rem;">UNLOCKED ✓</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================== -->
+        <!-- VIEW 8: LEADERBOARD                       -->
+        <!-- ========================================== -->
+        <section id="leaderboard-view" class="app-view">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800;">🏆 Global Defender Standings</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">HackerRank-style CTF & Drill ranking based on accuracy, challenges solved, and response speed.</p>
+                </div>
+                <input type="text" id="leaderboard-search" class="form-control" style="width: 240px;" placeholder="Search trainee or rank..." onkeyup="filterLeaderboard()">
+            </div>
+
+            <div class="card" style="overflow-x: auto; padding: 0;">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Rank</th>
+                            <th>Defender / Trainee</th>
+                            <th>Badge</th>
+                            <th>Drills Solved</th>
+                            <th>Accuracy</th>
+                            <th>Avg Speed</th>
+                            <th>Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- REAL-TIME AI LINK & FILE INSPECTOR MODAL   -->
+    <!-- ========================================== -->
+    <div id="inspector-modal-backdrop" class="modal-backdrop" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="font-size: 1.4rem;">🔍</span>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">AI Threat & Link Inspector</h3>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Real-Time Text, URL, PDF & Screenshot Verification Engine</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeInspectorModal()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+                    Paste suspicious email text, headers, or URLs, and/or upload a suspicious PDF document or screenshot for heuristic threat scanning:
+                </p>
+
+                <!-- TEXT INPUT -->
+                <div class="form-group">
+                    <textarea id="inspector-modal-text" class="form-control" rows="3" placeholder="Paste email content, message body, or link URL here (e.g. 'Account suspended, verify at http://storage-admin.xyz/verify')..."></textarea>
+                </div>
+
+                <!-- FILE DROPZONE -->
+                <div class="dropzone" id="inspector-dropzone" onclick="document.getElementById('inspector-file-upload').click()">
+                    <input type="file" id="inspector-file-upload" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" onchange="handleInspectorFile(event)">
+                    <div id="dropzone-text">
+                        <span style="font-size: 1.5rem;">📎</span>
+                        <div style="font-weight: 700; margin-top: 0.25rem;">Upload Suspicious PDF or Screenshot</div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">Click to browse or drag & drop files (.pdf, .png, .jpg, .jpeg)</div>
+                    </div>
+                </div>
+
+                <!-- SAMPLE BUTTONS & SUBMIT -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.4rem;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="loadInspectorSample(true)">Load Sample Threat 🚨</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="loadInspectorSample(false)">Load Sample Safe 🛡️</button>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="executeInspectorAnalysis()">⚡ Analyze Threat</button>
+                </div>
+
+                <!-- RESULTS CONTAINER -->
+                <div id="inspector-modal-results" style="display: none; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle);">
+                    <div id="inspector-result-banner" style="padding: 0.85rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <div id="inspector-result-icon" style="font-size: 1.75rem;">🛡️</div>
+                        <div>
+                            <div id="inspector-result-status" style="font-weight: 800; font-size: 1.05rem;">VERDICT</div>
+                            <div id="inspector-result-score-text" style="font-size: 0.82rem; color: var(--text-muted);">Risk Score: 0%</div>
+                        </div>
+                    </div>
+
+                    <!-- METER -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem;">
+                            <span>Calculated Threat Likelihood:</span>
+                            <span id="inspector-meter-pct">0%</span>
+                        </div>
+                        <div style="background: var(--bg-card); height: 8px; border-radius: 999px; overflow: hidden;">
+                            <div id="inspector-meter-fill" style="width: 0%; height: 100%; background: var(--accent-emerald); transition: width 0.4s ease;"></div>
+                        </div>
+                    </div>
+
+                    <div id="inspector-flags-box" style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #FDA4AF; margin-bottom: 0.35rem;">🚩 Detected Red Flags:</div>
+                        <div id="inspector-flags-container" style="display: flex; flex-direction: column; gap: 0.35rem;"></div>
+                    </div>
+
+                    <div style="background: rgba(15, 23, 42, 0.7); border-left: 3px solid var(--brand-cyan); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.86rem;">
+                        <strong style="color: var(--brand-cyan);">Actionable Guidance:</strong>
+                        <p id="inspector-guidance-text" style="color: #E2E8F0; margin-top: 0.2rem;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- SIMULATED LOGIN PORTAL PREVIEW MODAL       -->
+    <!-- ========================================== -->
+    <div id="simulated-portal-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-box" style="max-width: 520px; background: #FFFFFF; color: #0F172A;">
+            <div style="background: #F1F5F9; padding: 0.85rem 1.25rem; border-bottom: 1px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 0.4rem;">
+                    <span>🔒 Safe Simulated Login Sandbox</span>
+                </div>
+                <button type="button" class="btn-close-modal" style="color: #475569;" onclick="closeSimulatedPortal()">&times;</button>
+            </div>
+            <div id="simulated-portal-body" style="padding: 2rem;"></div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- VERIFIABLE CERTIFICATE MODAL               -->
+    <!-- ========================================== -->
+    <div id="certificate-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-box" style="max-width: 650px; background: #0F172A; border: 2px solid var(--brand-cyan);">
+            <div class="modal-header" style="background: #1E293B;">
+                <div style="font-weight: 800; font-size: 1.1rem; color: #fff;">📜 Certificate of Cybersecurity Competency</div>
+                <button type="button" class="btn-close-modal" onclick="closeCertificateModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 2.5rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
+                <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; color: var(--brand-cyan); font-weight: 700;">Credential of Defense Mastery</div>
+                <h2 style="font-size: 1.8rem; font-weight: 800; margin: 0.75rem 0;" id="cert-trainer-name">Ms. Dhriti Gupta</h2>
+                <p style="color: var(--text-muted); font-size: 0.92rem; max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.6;">
+                    Has demonstrated demonstrated cognitive resilience and technical proficiency across Phishing Defense, CTF Tactical Missions, and Threat Investigation.
+                </p>
+
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.75rem; font-size: 0.85rem;">
+                    <div style="background: #1E293B; border: 1px solid var(--border-subtle); padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted);">Certificate ID:</span> <strong id="cert-id-code" style="color: #93C5FD;">TV-2026-DH941</strong>
+                    </div>
+                    <div style="background: #1E293B; border: 1px solid var(--border-subtle); padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
+                        <span style="color: var(--text-muted);">Clearance:</span> <strong style="color: var(--accent-emerald);">Level 3 Defensive Specialist</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print Certificate</button>
+                    <button class="btn btn-secondary btn-sm" onclick="closeCertificateModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div>
+            <strong>Threat Vector</strong> — AI-Based Adaptive Social Engineering Threat Detection & Defense Console
+        </div>
+        <div style="margin-top: 0.35rem; color: var(--text-dim);">
+            Active Session: <strong id="footer-trainer-name">Active Trainer: Dhriti</strong> | Single-Link Consolidated Architecture | Vercel Ready
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- EMBEDDED REAL DATASETS & CLIENT LOGIC     -->
+    <!-- ========================================== -->
+    <script>
+        /* ----------------------------------------------------
+           1. CORE DATASETS: DRILLS, PHISHING, CTF, WAR ROOM
+        ---------------------------------------------------- */
+        const DRILL_SCENARIOS = [
+            {
+                id: 1, category_code: "URGENCY", channel: "email",
+                title: "Immediate Action Required: Account Deactivation Notice",
+                sender: "portal-support@campus-security-auth.net", sender_name: "University IT Service Desk",
+                subject: "CRITICAL: Student Portal will be terminated within 2 hours",
+                body: "Dear Student,\n\nOur system detected multiple failed login attempts on your institutional account. To maintain network integrity, your account is scheduled for automatic permanent deactivation in 120 minutes.\n\nYou must immediately authenticate your credentials to cancel this termination order:\n\n👉 https://campus-security-auth.net/emergency-verify?user=student\n\nFailure to act promptly will result in complete loss of academic records and email access.\n\nRegards,\nIT Operations & Security Taskforce",
+                is_threat: true, difficulty: "Medium",
+                red_flags: [
+                    "Artificial time limit ('within 2 hours') designed to induce panic and prevent critical thinking.",
+                    "Mismatched sender domain ('campus-security-auth.net' instead of official institution domain).",
+                    "Severe penalty threat ('complete loss of academic records') for not clicking."
+                ],
+                explanation: "This attack leverages Urgency and Fear heuristics. Cybercriminals deliberately create artificial time pressure (a 2-hour deadline) to trigger panic, causing victims to bypass logical scrutiny and click the credential-harvesting link.",
+                micro_lesson: "Authentic IT departments never set a 2-hour deadline for account termination via an unsolicited link. Always navigate directly to your institution's portal by typing the official URL into your browser."
+            },
+            {
+                id: 2, category_code: "AUTHORITY", channel: "email",
+                title: "Confidential Request from Office of the Dean",
+                sender: "dean.office.academics@gmail.com", sender_name: "Dr. R. K. Sharma (Dean of Student Affairs)",
+                subject: "CONFIDENTIAL: Urgent administrative assistance needed",
+                body: "Hello,\n\nI am currently in an executive committee meeting with the board and cannot take phone calls. I need you to assist me with a time-sensitive administrative task regarding faculty honorarium vouchers.\n\nPlease purchase five $100 Apple or Google Play gift cards and reply with the scanned scratch-off codes right away. The finance office will reimburse you on Monday morning with full official receipts.\n\nPlease keep this strictly between us until the meeting concludes.\n\nDr. R. K. Sharma\nDean of Student Affairs",
+                is_threat: true, difficulty: "Easy",
+                red_flags: [
+                    "Public email provider ('@gmail.com') used instead of institutional email address.",
+                    "Executive impersonation requesting gift cards (a classic unrecoverable funds scam).",
+                    "Excuse for inability to verify ('in a committee meeting, cannot take calls')."
+                ],
+                explanation: "This attack relies heavily on Authority Bias. When an email appears to originate from leadership (the Dean), individuals often feel compelled to comply without question. High-profile figures never ask students or employees to buy gift cards.",
+                micro_lesson: "No legitimate executive, professor, or dean will ever ask you to purchase gift cards. Always check the sender's actual email address, not just the display name."
+            },
+            {
+                id: 3, category_code: "FAKELINKS", channel: "sms",
+                title: "Package Delivery Exception Alert",
+                sender: "+1 (844) 923-4412", sender_name: "Global Express Logistics",
+                subject: "SMS Notification",
+                body: "[Global Logistics Alert]: Your parcel #GL-88492 cannot be delivered due to an incorrect apartment number. A redelivery fee of $1.50 is required to prevent return to sender. Update your address & settle the fee here: http://fedx-parcel-redirection.top/retrack/88492",
+                is_threat: true, difficulty: "Medium",
+                red_flags: [
+                    "Smishing (SMS phishing) attempt with unknown phone number.",
+                    "Suspicious domain name ('fedx-parcel-redirection.top') with uncommon top-level domain (.top) impersonating FedEx.",
+                    "Micro-charge trap ($1.50 fee) designed to steal full credit card details and CVV."
+                ],
+                explanation: "This is a Smishing (SMS phishing) attack using Typosquatting and fake links. The attacker mimics a courier and requests a tiny fee ($1.50) so victims lower their guard, while the malicious page captures banking credentials.",
+                micro_lesson: "Never click tracking links sent via unsolicited SMS. Visit the official courier website directly and enter your tracking number into their official search bar."
+            },
+            {
+                id: 4, category_code: "INCENTIVE", channel: "email",
+                title: "Selected for Academic Excellence Grant & Technology Stipend",
+                sender: "rewards@academic-stipend-foundation.org", sender_name: "National Merit Foundation",
+                subject: "CONGRATULATIONS: You have won a $1,200 Student Tech Grant",
+                body: "Dear Applicant,\n\nWe are pleased to inform you that your profile has been selected for the 2026 National Student Technology Subsidy ($1,200 Laptop & Equipment Grant).\n\nTo accept and deposit this grant directly to your bank account, claim your token within 24 hours:\n\n➡️ Claim Your Award: https://academic-stipend-foundation.org/claim?id=9491\n\nNo repayment required. Only 15 grants left in your regional district.",
+                is_threat: true, difficulty: "Easy",
+                red_flags: [
+                    "Unsolicited financial award for a program you never applied to.",
+                    "Artificial scarcity ('Only 15 grants left in your district').",
+                    "Direct solicitation of banking details under the guise of an award payout."
+                ],
+                explanation: "This attack targets the Greed / Incentive vulnerability. It exploits financial desire by offering free money. Legitimate scholarships do not send unsolicited grants requiring immediate bank account entry via external links.",
+                micro_lesson: "If you did not apply for a scholarship, grant, or lottery, you did not win it. Treat unsolicited monetary offers as phishing attempts."
+            },
+            {
+                id: 5, category_code: "COERCION", channel: "email",
+                title: "Notice of Academic Integrity Infraction & Disciplinary Hearing",
+                sender: "disciplinary-board@univ-judicial-investigation.com", sender_name: "Academic Integrity Board",
+                subject: "LEGAL NOTICE: Formal allegations of examination malpractice",
+                body: "STUDENT SUMMONS:\n\nA formal complaint has been lodged alleging copyright and code plagiarism in your recent laboratory submission. If substantiated, this carries mandatory semester suspension.\n\nYou have been summoned for a digital hearing. You must download the evidence brief and case docket immediately to prepare your defense:\n\n📂 Download Case_Evidence_Docket.pdf.exe\n\nFailure to respond within 24 hours will result in automatic expulsion without appeal.",
+                is_threat: true, difficulty: "Hard",
+                red_flags: [
+                    "Severe intimidation and legal coercion designed to provoke panic.",
+                    "Double extension file masquerading as a PDF ('Case_Evidence_Docket.pdf.exe') containing executable malware.",
+                    "Unrecognized third-party domain ('univ-judicial-investigation.com')."
+                ],
+                explanation: "This attack utilizes Fear and Coercion. By threatening academic expulsion, the attacker induces terror so the victim recklessly downloads an executable malware payload disguised as a PDF document ('pdf.exe').",
+                micro_lesson: "Look closely at file attachments. An attachment ending in '.exe', '.vbs', or '.scr' is a program, not a document, regardless of the filename or PDF icon."
+            },
+            {
+                id: 6, category_code: "LEGITIMATE", channel: "email",
+                title: "Monthly University Library & Research Resource Newsletter",
+                sender: "library-services@university.edu", sender_name: "University Central Library",
+                subject: "Campus Library Digest: New IEEE & ACM Digital Access Hours",
+                body: "Hello Campus Community,\n\nWe are pleased to announce extended library hours for the upcoming mid-semester examination week. The digital repository now includes updated access to ACM and IEEE computer science transactions.\n\nKey updates:\n- Main Reading Hall open 24/7 with valid Student ID tap.\n- Research consultations available every Tuesday.\n\nYou can view full catalog listings by searching directly on the library portal at https://library.university.edu.\n\nWarm regards,\nUniversity Library Services",
+                is_threat: false, difficulty: "Easy",
+                red_flags: [],
+                explanation: "This is a legitimate university communication. The sender domain matches the official institution domain (.edu), there is no coercive language, no urgent deadline, no request for credentials or money, and the URL points to the genuine campus domain.",
+                micro_lesson: "Legitimate communications provide general information, refer you to standard resources, and do not use high-pressure tactics or ask for sensitive secrets."
+            }
+        ];
+
+        const PHISHING_SCENARIOS = [
+            {
+                id: 1, title: "Urgent Microsoft 365 Password Expiration Notice", difficulty: "Beginner",
+                category: "Credential Harvester", sender_name: "Microsoft 365 Security Operations",
+                sender_email: "admin-alert@m365-security-auth.top", reply_to: "bounce@m365-security-auth.top",
+                subject: "ACTION REQUIRED: Your corporate password expires in 4 hours",
+                simulated_url: "https://login.microsoft-auth-portal.top/common/oauth2/authorize",
+                fake_portal_type: "m365",
+                body_html: "<p>Dear Employee,</p><p>Our identity access monitoring system has detected that your <strong>Office 365 institutional password</strong> is scheduled to expire today in <strong>4 hours</strong>.</p><p>To avoid loss of access to your Outlook inbox and OneDrive files, please re-authenticate immediately:</p><div style='text-align: center; margin: 1.5rem 0;'><a href='#' style='background: #0078D4; color: #FFF; padding: 0.75rem 1.75rem; border-radius: 4px; text-decoration: none; font-weight: 700; display: inline-block;'>Keep Current Password & Re-verify Now &rarr;</a></div><p style='font-size: 0.85rem; color: #64748B;'>Human Resources & Identity Management</p>",
+                is_phishing: true,
+                red_flags: [
+                    "Sender domain 'm365-security-auth.top' uses an untrusted '.top' TLD instead of official 'microsoft.com'",
+                    "Artificial 4-hour urgency deadline designed to induce panic and bypass logical review",
+                    "Legitimate enterprise identity providers never allow users to 'keep current password' via an external email link"
+                ],
+                indicators: ["Untrusted .top domain", "Artificial 4-hour deadline", "Keep password button", "Generic greeting"]
+            },
+            {
+                id: 2, title: "Direct Deposit Payroll Information Routing Update", difficulty: "Intermediate",
+                category: "BEC / Financial Fraud", sender_name: "Corporate Payroll Services",
+                sender_email: "payroll-notifications@corp-workplace-internal.com", reply_to: "payroll-notifications@corp-workplace-internal.com",
+                subject: "Notice of Payroll Routing Change for Upcoming Pay Cycle",
+                simulated_url: "https://secure-workday-portal.cc/payroll/login",
+                fake_portal_type: "workday",
+                body_html: "<p>Hello,</p><p>This automated notification confirms that your request to update your <strong>Direct Deposit Bank Account & Routing Details</strong> was processed successfully this morning.</p><p>Your upcoming semi-monthly salary disbursement of <strong>$3,420.00</strong> will be routed to your new <em>Chase Bank Account ending in *9142</em>.</p><div style='background: #FEF2F2; border-left: 4px solid #DC2626; padding: 0.75rem 1rem; color: #991B1B;'><strong>Didn't make this change?</strong> Cancel the transaction immediately:</div><div style='text-align: center; margin: 1.5rem 0;'><a href='#' style='background: #DC2626; color: #FFF; padding: 0.75rem 1.75rem; border-radius: 4px; text-decoration: none; font-weight: 700; display: inline-block;'>Cancel Unauthorized Payroll Change &rarr;</a></div>",
+                is_phishing: true,
+                red_flags: [
+                    "Anxiety-inducing false alert claiming money is about to be rerouted to an unknown account",
+                    "Destination link leads to spoofed '.cc' domain ('secure-workday-portal.cc') rather than authentic corporate Workday SSO",
+                    "Sender domain 'corp-workplace-internal.com' is an external registration"
+                ],
+                indicators: ["Lookalike .cc domain", "High emotional charge (stolen paycheck)", "Email link authentication"]
+            },
+            {
+                id: 3, title: "Q4 Executive Bonus Allocation & Signed Acknowledgment", difficulty: "Advanced",
+                category: "Malware Delivery", sender_name: "Helen Vance (VP Human Resources)",
+                sender_email: "helen.vance@company.com", reply_to: "helen.vance.exec.hr@gmail.com",
+                subject: "CONFIDENTIAL: Approved Executive Compensation & Q4 Performance Bonus",
+                simulated_url: "",
+                fake_portal_type: "doc",
+                body_html: "<p>Dear Team Member,</p><p>Following quarterly review, I am delighted to share your approved <strong>Q4 Performance Bonus and Equity Allocation Summary</strong>.</p><div style='background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem; margin: 1.25rem 0; display: flex; align-items: center; gap: 0.75rem; color: #0F172A;'><div style='font-size: 2rem;'>📎</div><div><div style='font-weight: 700;'>Q4_Bonus_Allocation_Schedule_Signed.pdf.exe</div><div style='font-size: 0.8rem; color: #64748B;'>Format: Portable Executable disguised as PDF</div></div></div>",
+                is_phishing: true,
+                red_flags: [
+                    "Double file extension (.pdf.exe) concealing an executable malware payload behind a PDF icon",
+                    "Mismatched Reply-To header pointing to external '@gmail.com' address rather than official corporate email"
+                ],
+                indicators: ["Double extension (.pdf.exe)", "Reply-To mismatch (@gmail.com)", "Financial bonus greed lure"]
+            },
+            {
+                id: 4, title: "DHL Express: Delivery Exception - Unpaid Customs Surcharge", difficulty: "Beginner",
+                category: "Invoice Scam", sender_name: "DHL Express Shipping Notification",
+                sender_email: "tracking-dispatch@dhl-delivery-notification.biz", reply_to: "tracking-dispatch@dhl-delivery-notification.biz",
+                subject: "Shipment #DH-90812 Held at Regional Hub: Customs Duty of $2.15 Due",
+                simulated_url: "https://dhl-express-redirection.biz/pay-fee?id=889012",
+                fake_portal_type: "dhl",
+                body_html: "<p>Dear Customer,</p><p>Your incoming international package with tracking number <strong>#DH-889012-US</strong> cannot be released for final delivery.</p><p>An outstanding customs documentation fee of <strong>$2.15 USD</strong> is pending. Settle the balance below:</p><div style='text-align: center; margin: 1.5rem 0;'><a href='#' style='background: #FFCC00; color: #D40511; padding: 0.75rem 1.75rem; border-radius: 4px; text-decoration: none; font-weight: 800; display: inline-block;'>Pay $2.15 Surcharge & Schedule Delivery &rarr;</a></div>",
+                is_phishing: true,
+                red_flags: [
+                    "Sender domain 'dhl-delivery-notification.biz' uses an untrusted '.biz' TLD rather than authentic 'dhl.com'",
+                    "Micro-charge ($2.15) tactic designed to lower psychological suspicion while harvesting credit card details"
+                ],
+                indicators: ["Untrusted .biz domain", "Micro-charge ($2.15)", "Vague shipment information"]
+            },
+            {
+                id: 5, title: "IT Operations: Scheduled Weekend Network Maintenance (Safe Baseline)", difficulty: "Intermediate",
+                category: "Legitimate Communication", sender_name: "IT Infrastructure Operations",
+                sender_email: "it-support@organization-internal.edu", reply_to: "it-support@organization-internal.edu",
+                subject: "Notice: Scheduled Core Switch Maintenance (Sunday 02:00 - 04:00 AM UTC)",
+                simulated_url: "",
+                fake_portal_type: "",
+                body_html: "<p>Dear Campus Community,</p><p>The Network Operations Center (NOC) will perform scheduled firmware upgrades on our primary core switches on Sunday.</p><div style='background: #F0FDF4; border-left: 4px solid #16A34A; padding: 0.75rem 1rem; color: #166534;'><strong>Action Required: None.</strong> You do not need to log in, reset passwords, or click any links. All network services will resume automatically upon completion.</div>",
+                is_phishing: false,
+                red_flags: [],
+                indicators: ["Legitimate institutional domain", "Explicit statement NO passwords required", "Advance scheduling notice"]
+            },
+            {
+                id: 6, title: "Shared Document: 'FY2026 Executive Performance Review' via DocuSign", difficulty: "Advanced",
+                category: "OAuth Consent", sender_name: "DocuSign Automation Dispatch",
+                sender_email: "dse@na4.docusign-verification.net", reply_to: "dse@na4.docusign-verification.net",
+                subject: "Please Review & DocuSign: Executive Performance Appraisal",
+                simulated_url: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=bad-actor-app-id",
+                fake_portal_type: "docusign",
+                body_html: "<p>Hello,</p><p><strong>Office of Executive Leadership</strong> has sent you a confidential document to review and sign via DocuSign Electronic Signature System.</p><div style='text-align: center; margin: 1.5rem 0;'><a href='#' style='background: #2563EB; color: #FFF; padding: 0.75rem 1.75rem; border-radius: 4px; text-decoration: none; font-weight: 700; display: inline-block;'>Review & Authorize Document in DocuSign &rarr;</a></div>",
+                is_phishing: true,
+                red_flags: [
+                    "OAuth consent abuse: Requesting excessive permissions ('Mail.ReadWrite', 'Files.ReadWrite.All')",
+                    "Lookalike domain 'docusign-verification.net' mimicking authentic 'docusign.com'"
+                ],
+                indicators: ["Illicit OAuth consent app", "Spoofed docusign-verification.net", "Curiosity lure"]
+            }
+        ];
+
+        const CTF_CHALLENGES = [
+            {
+                id: 1, title: "The Midnight Intruder", category: "LOGS", difficulty: "Easy", points: 100, xp: 120,
+                desc: "Analyze Apache access logs to identify the attacker's IP who downloaded the confidential backup archive.",
+                artifact: `192.168.1.45 - - [14/Oct/2026:00:12:01 +0000] "GET /index.html HTTP/1.1" 200 4520\n192.168.1.105 - - [14/Oct/2026:00:14:22 +0000] "GET /../../etc/passwd HTTP/1.1" 403 280\n192.168.1.105 - - [14/Oct/2026:00:14:38 +0000] "GET /admin/backup.zip HTTP/1.1" 200 48921040`,
+                hint: "Look for the HTTP status code 200 indicating successful download of the archive file in column 9.",
+                flag: "FLAG{192.168.1.105}"
+            },
+            {
+                id: 2, title: "C2 Beacon Decode", category: "CRYPTO", difficulty: "Easy", points: 100, xp: 120,
+                desc: "Decode the outbound Base64 query payload to recover the command-and-control secret authentication token.",
+                artifact: "Intercepted Base64 String:\nRkxBR3tiYXNlNjRfaXNfbm90X2VuY3J5cHRpb25fc2VjdXJpdHl9",
+                hint: "Use JavaScript atob() or a standard Base64 decoder.",
+                flag: "FLAG{base64_is_not_encryption_security}"
+            },
+            {
+                id: 3, title: "DNS Tunneling Discovery", category: "NETSEC", difficulty: "Medium", points: 150, xp: 180,
+                desc: "Decode the hexadecimal subdomain query exfiltrating sensitive data to an external nameserver.",
+                artifact: "Query: 666c61677b646e735f657866696c74726174696f6e5f64657465637465647d.tunnel.attacker-c2.net\nClient: 10.0.5.21 -> Server: 8.8.8.8",
+                hint: "Extract the hex characters before '.tunnel'. 66 = 'f', 6c = 'l', 61 = 'a', 67 = 'g'.",
+                flag: "FLAG{dns_exfiltration_detected}"
+            },
+            {
+                id: 4, title: "Shadow PowerShell Persistence", category: "FORENSICS", difficulty: "Medium", points: 150, xp: 180,
+                desc: "Decode the encoded PowerShell command found inside a scheduled task registry key.",
+                artifact: "powershell.exe -NoP -NonI -W Hidden -Enc RkxBR3twZXJzaXN0ZW5jZV92aWFfc2NoZWR1bGVkX3Rhc2t9",
+                hint: "The -Enc argument is a Base64 string.",
+                flag: "FLAG{persistence_via_scheduled_task}"
+            },
+            {
+                id: 5, title: "Signature Hunt: Web Shell", category: "THREAT_ID", difficulty: "Easy", points: 100, xp: 120,
+                desc: "Inspect the deobfuscated PHP script snippet to locate the security analyst verification flag.",
+                artifact: "<?php\nif(isset($_POST['eval_cmd'])){\n    system($_POST['eval_cmd']);\n    // Verified Threat Flag: FLAG{eval_system_webshell_found}\n}\n?>",
+                hint: "Check comments within the script payload.",
+                flag: "FLAG{eval_system_webshell_found}"
+            },
+            {
+                id: 6, title: "Tactical Caesar Cipher", category: "CRYPTO", difficulty: "Medium", points: 150, xp: 180,
+                desc: "Decrypt the rotational substitution ciphertext rotated by 13 positions (ROT13) to capture the flag.",
+                artifact: "Ciphertext: SYNT{eBG13_vf_abg_n_pvcure_sbe_cebqhpgvba}",
+                hint: "Shift each character back by 13 positions (S -> F, Y -> L, N -> A, T -> G).",
+                flag: "FLAG{rOT13_is_not_a_cipher_for_production}"
+            },
+            {
+                id: 7, title: "SQL Injection Extraction", category: "LOGS", difficulty: "Hard", points: 200, xp: 250,
+                desc: "Inspect the URL-encoded SQL query parameters blocked by the WAF to extract the injected payload flag.",
+                artifact: "GET /api/inventory?cat=1'%20UNION%20SELECT%20null,null,'FLAG{blind_sql_injection_defense}',null--%20- HTTP/1.1",
+                hint: "Look inside the single quotes of the UNION SELECT parameter.",
+                flag: "FLAG{blind_sql_injection_defense}"
+            },
+            {
+                id: 8, title: "Beacon Jitter Hunter", category: "NETSEC", difficulty: "Hard", points: 200, xp: 250,
+                desc: "Telemetry metadata captured from an outbound encrypted beacon to an external bulletproof VPS.",
+                artifact: "Telemetry Payload Metadata:\n{ \"agent\": \"sliver-implant\", \"arch\": \"x64\", \"auth_token\": \"FLAG{heartbeat_jitter_beaconing}\" }",
+                hint: "Inspect the auth_token key.",
+                flag: "FLAG{heartbeat_jitter_beaconing}"
+            }
+        ];
+
+        const WAR_ROOM_SCENARIOS = [
+            {
+                code: "RANSOM_01", title: "Operation DarkRansom: Active Workstation & Share Outbreak",
+                threat_actor: "FIN7 / BlackByte Ransomware Affiliate",
+                stages: [
+                    {
+                        title: "Stage 1: Alert Triage & Emergency Quarantine",
+                        situation: "Mass file encryption is actively underway across \\\\nas-finance\\payroll. Sarah Lin reports her screen is frozen with a countdown timer. What is your immediate first defensive action?",
+                        options: [
+                            { id: "A", text: "Immediately isolate FIN-WS-08 from network via EDR and temporarily disable SMB on NAS.", correct: true, consequence: "Outstanding! Endpoint isolation halts encryption propagation instantly across the storage volume." },
+                            { id: "B", text: "Reboot computer into Windows Safe Mode and copy files to USB.", correct: false, consequence: "Destructive error! Overwrites volatile RAM encryption keys and risks spreading malware to the USB device." },
+                            { id: "C", text: "Initiate communication via the Tor chat link in ransom note.", correct: false, consequence: "Violates protocol! Premature negotiation reveals panic and does not stop active encryption." }
+                        ]
+                    },
+                    {
+                        title: "Stage 2: Blast Radius Investigation & Forensics",
+                        situation: "Workstation isolated. Forensic triage confirms execution occurred via a malicious macro. How do you assess lateral movement?",
+                        options: [
+                            { id: "A", text: "Query Active Directory Domain Controller Event Logs (Event IDs 4624, 7045) for remote PsExec or WMI creation.", correct: true, consequence: "Superb! Confirmed attacker attempted to pivot to DC-BACKUP-01 but was blocked by host quarantine." },
+                            { id: "B", text: "Run consumer antivirus scan on Sarah's computer and wait.", correct: false, consequence: "Fails to detect domain-wide Kerberos ticket abuse or lateral service creation." },
+                            { id: "C", text: "Immediately reimage FIN-WS-08 without taking disk or memory dumps.", correct: false, consequence: "Erases critical forensic evidence necessary for insurance and breach disclosures." }
+                        ]
+                    }
+                ]
+            },
+            {
+                code: "INGRESS_02", title: "Ghost Ingress: Impossible Travel & Credential Stuffing",
+                threat_actor: "APT29 / Cozy Bear Variant",
+                stages: [
+                    {
+                        title: "Stage 1: Session Interception & Identity Verification",
+                        situation: "Marcus Vance's account connected to SSL-VPN from Romania 14 minutes after badging through a turnstile in Chicago. The session is actively querying internal GitHub Enterprise code. Action?",
+                        options: [
+                            { id: "A", text: "Terminate active VPN session immediately, revoke all active OAuth/refresh tokens, and enforce password reset with MFA.", correct: true, consequence: "Immediate containment! Disconnects the intruder and invalidates stolen cookie sessions." },
+                            { id: "B", text: "Send Marcus an email asking if he is traveling in Romania.", correct: false, consequence: "Critical delay! Gives the attacker hours of uninterrupted exfiltration time." }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        /* ----------------------------------------------------
+           2. STATE MANAGEMENT & SESSION
+        ---------------------------------------------------- */
+        let activeTrainer = localStorage.getItem('tv_trainer') || 'Dhriti';
+        let isLoggedIn = localStorage.getItem('tv_logged_in') === 'true';
+        let currentDrillIndex = 0;
+        let drillTimer = null;
+        let drillStartTime = Date.now();
+        let ctfScore = parseInt(localStorage.getItem('tv_ctf_score') || '0');
+        let solvedCtfIds = JSON.parse(localStorage.getItem('tv_ctf_solved') || '[]');
+        let completedDrills = JSON.parse(localStorage.getItem('tv_drills_completed') || '[]');
+
+        function updateTrainerHeader() {
+            const h = document.getElementById('nav-trainer-name');
+            const g = document.getElementById('dash-greeting');
+            const f = document.getElementById('footer-trainer-name');
+            const c = document.getElementById('cert-trainer-name');
+            
+            const displayTitle = `Active Trainer: ${activeTrainer}`;
+            if (h) h.textContent = displayTitle;
+            if (g) g.textContent = `Welcome, Trainer ${activeTrainer}`;
+            if (f) f.textContent = displayTitle;
+            if (c) c.textContent = activeTrainer;
+        }
+
+        function showToast(message, icon = '🔔') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        /* ----------------------------------------------------
+           3. SINGLE-LINK NAVIGATION & ROUTING
+        ---------------------------------------------------- */
+        function navigateTo(routeId) {
+            if (!isLoggedIn && routeId !== 'login') {
+                routeId = 'login';
+            }
+
+            // Update URL Hash without reload
+            window.location.hash = routeId;
+
+            // Toggle view visibility
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+            const targetView = document.getElementById(`${routeId}-view`);
+            if (targetView) targetView.classList.add('active');
+
+            // Toggle Nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.dataset.route === routeId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Specific view initializers
+            if (routeId === 'drills') {
+                renderCurrentDrill();
+            } else if (routeId === 'phishing') {
+                renderPhishingCatalog();
+            } else if (routeId === 'ctf') {
+                renderCtfGrid();
+            } else if (routeId === 'war-room') {
+                renderWarRoomCatalog();
+            } else if (routeId === 'leaderboard') {
+                renderLeaderboard();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const uname = document.getElementById('login-username').value.trim();
+            if (!uname) return;
+
+            activeTrainer = uname;
+            isLoggedIn = true;
+            localStorage.setItem('tv_trainer', activeTrainer);
+            localStorage.setItem('tv_logged_in', 'true');
+
+            document.getElementById('app-navbar').style.display = 'flex';
+            updateTrainerHeader();
+            showToast(`Signed in successfully as Trainer ${activeTrainer}!`, '🛡️');
+            navigateTo('dashboard');
+        }
+
+        function quickLoginDemo() {
+            activeTrainer = 'Ms. Dhriti Gupta';
+            isLoggedIn = true;
+            localStorage.setItem('tv_trainer', activeTrainer);
+            localStorage.setItem('tv_logged_in', 'true');
+
+            document.getElementById('app-navbar').style.display = 'flex';
+            updateTrainerHeader();
+            showToast('Signed in via Active Trainer Profile (Ms. Dhriti Gupta)', '⚡');
+            navigateTo('dashboard');
+        }
+
+        function handleSignOut() {
+            isLoggedIn = false;
+            localStorage.removeItem('tv_logged_in');
+            document.getElementById('app-navbar').style.display = 'none';
+            showToast('Signed out of command console.', '👋');
+            navigateTo('login');
+        }
+
+        /* ----------------------------------------------------
+           4. DRILLS ENGINE (SEQUENTIAL SIMULATION)
+        ---------------------------------------------------- */
+        function startDrillTimer() {
+            if (drillTimer) clearInterval(drillTimer);
+            drillStartTime = Date.now();
+            drillTimer = setInterval(() => {
+                const elapsed = ((Date.now() - drillStartTime) / 1000).toFixed(1);
+                const elem = document.getElementById('drill-stopwatch');
+                if (elem) elem.textContent = `${elapsed}s`;
+            }, 100);
+        }
+
+        function renderCurrentDrill() {
+            const sc = DRILL_SCENARIOS[currentDrillIndex % DRILL_SCENARIOS.length];
+            const badge = document.getElementById('drill-id-badge');
+            const chBadge = document.getElementById('drill-channel-badge');
+            const diffBadge = document.getElementById('drill-diff-badge');
+            const rationale = document.getElementById('drill-rationale-text');
+            const viewport = document.getElementById('drill-viewport');
+            const fbBox = document.getElementById('drill-feedback-box');
+
+            if (badge) badge.textContent = `#${sc.id}`;
+            if (chBadge) chBadge.textContent = `CHANNEL: ${sc.channel.toUpperCase()}`;
+            if (diffBadge) diffBadge.textContent = `DIFFICULTY: ${sc.difficulty.toUpperCase()}`;
+            if (rationale) rationale.innerHTML = `<strong>AI Recommendation:</strong> Sequential Adaptive Drill ${sc.id}: Evaluating ${sc.category_code} cognitive vector.`;
+            if (fbBox) fbBox.style.display = 'none';
+
+            let commHtml = '';
+            if (sc.channel === 'email') {
+                commHtml = `
+                    <div style="background: #FFFFFF; color: #0F172A; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); overflow: hidden; box-shadow: var(--shadow-md);">
+                        <div style="background: #F8FAFC; padding: 0.75rem 1.25rem; border-bottom: 1px solid #E2E8F0; display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: #64748B; font-weight: 700;">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #EF4444; display: inline-block;"></span>
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #F59E0B; display: inline-block;"></span>
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: #10B981; display: inline-block;"></span>
+                            <span style="margin-left: 0.5rem;">MAIL CLIENT &mdash; SECURE INBOX PREVIEW</span>
+                        </div>
+                        <div style="padding: 1.25rem 1.5rem; background: #FAFAFA; border-bottom: 1px solid #E2E8F0; font-size: 0.9rem;">
+                            <div><span style="color: #64748B; width: 70px; display: inline-block;">From:</span> <strong>${sc.sender_name}</strong> &lt;${sc.sender}&gt;</div>
+                            <div style="margin-top: 0.25rem;"><span style="color: #64748B; width: 70px; display: inline-block;">To:</span> ${activeTrainer.toLowerCase().replace(/[^a-z0-9]/g, '.')}@defense-academy.edu</div>
+                            <div style="margin-top: 0.4rem; font-size: 1.15rem; font-weight: 800; color: #0F2744;">${sc.subject}</div>
+                        </div>
+                        <div style="padding: 1.75rem; font-size: 1rem; line-height: 1.7; white-space: pre-line; background: #FFFFFF;">${sc.body}</div>
+                    </div>
+                `;
+            } else if (sc.channel === 'sms') {
+                commHtml = `
+                    <div style="max-width: 440px; margin: 0 auto; background: #FFFFFF; color: #0F172A; border-radius: 16px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: var(--shadow-lg);">
+                        <div style="background: #F8FAFC; padding: 1rem; text-align: center; border-bottom: 1px solid #E2E8F0;">
+                            <div style="font-weight: 700; color: #0F2744;">${sc.sender_name}</div>
+                            <div style="font-size: 0.8rem; color: #64748B;">${sc.sender}</div>
+                        </div>
+                        <div style="padding: 1.5rem 1.25rem; background: #F1F5F9; min-height: 180px;">
+                            <div style="background: #FFFFFF; border: 1px solid #E2E8F0; padding: 1.1rem; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.95rem; line-height: 1.6; color: #1E293B; box-shadow: var(--shadow-sm);">
+                                ${sc.body}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            if (viewport) viewport.innerHTML = commHtml;
+            startDrillTimer();
+        }
+
+        function recordDrillChoice(reportedThreat) {
+            if (drillTimer) clearInterval(drillTimer);
+            const elapsed = ((Date.now() - drillStartTime) / 1000).toFixed(1);
+            const sc = DRILL_SCENARIOS[currentDrillIndex % DRILL_SCENARIOS.length];
+            const isCorrect = (reportedThreat === sc.is_threat);
+
+            // Record telemetry
+            completedDrills.push({ id: sc.id, isCorrect, time: elapsed, vector: sc.category_code });
+            localStorage.setItem('tv_drills_completed', JSON.stringify(completedDrills));
+
+            // Render feedback
+            const fbBox = document.getElementById('drill-feedback-box');
+            const banner = document.getElementById('drill-fb-banner');
+            const icon = document.getElementById('drill-fb-icon');
+            const headline = document.getElementById('drill-fb-headline');
+            const desc = document.getElementById('drill-fb-desc');
+            const userChoice = document.getElementById('drill-fb-user-choice');
+            const truth = document.getElementById('drill-fb-truth');
+            const time = document.getElementById('drill-fb-time');
+            const redflags = document.getElementById('drill-fb-redflags-list');
+            const explanation = document.getElementById('drill-fb-explanation');
+            const microlesson = document.getElementById('drill-fb-microlesson');
+
+            if (isCorrect) {
+                banner.style.background = 'var(--accent-emerald-bg)';
+                banner.style.border = '1px solid var(--accent-emerald-border)';
+                icon.textContent = '🛡️';
+                headline.textContent = sc.is_threat ? 'Threat Neutralized! Spot On 🛡️' : 'Correctly Verified as Safe ✅';
+                desc.textContent = 'Your critical analysis successfully identified the nature of this communication.';
+            } else {
+                banner.style.background = 'var(--accent-rose-bg)';
+                banner.style.border = '1px solid var(--accent-rose-border)';
+                icon.textContent = '🚨';
+                headline.textContent = sc.is_threat ? 'Vulnerability Exploited! Attack Succeeded 🚨' : 'False Positive Alert ⚠️';
+                desc.textContent = 'This scenario bypassed standard scrutiny. Review the diagnostic breakdown below.';
+            }
+
+            userChoice.textContent = reportedThreat ? 'Reported Threat' : 'Marked Safe';
+            userChoice.style.color = isCorrect ? 'var(--accent-emerald)' : 'var(--accent-rose)';
+            truth.textContent = sc.is_threat ? 'Social Engineering Attack' : 'Legitimate Notification';
+            time.textContent = `${elapsed}s`;
+
+            if (redflags) {
+                redflags.innerHTML = sc.red_flags.map(f => `
+                    <div style="background: rgba(244, 63, 94, 0.1); border-left: 3px solid #F43F5E; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.88rem; color: #FDA4AF;">
+                        ⚠️ ${f}
+                    </div>
+                `).join('');
+            }
+            if (explanation) explanation.textContent = sc.explanation;
+            if (microlesson) microlesson.textContent = sc.micro_lesson;
+
+            if (fbBox) {
+                fbBox.style.display = 'block';
+                fbBox.scrollIntoView({ behavior: 'smooth' });
+            }
+            showToast(isCorrect ? 'Drill Completed: +100 XP awarded!' : 'Drill Completed: Vulnerability identified', isCorrect ? '✅' : '⚠️');
+        }
+
+        function loadNextSequentialDrill() {
+            currentDrillIndex++;
+            renderCurrentDrill();
+            document.getElementById('drills-view').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /* ----------------------------------------------------
+           5. PHISHING DEFENSE RANGE
+        ---------------------------------------------------- */
+        function renderPhishingCatalog(filterTier = 'all') {
+            const container = document.getElementById('phishing-cards-list');
+            if (!container) return;
+
+            let filtered = PHISHING_SCENARIOS;
+            if (filterTier !== 'all') {
+                filtered = PHISHING_SCENARIOS.filter(s => s.difficulty.toLowerCase() === filterTier.toLowerCase());
+            }
+
+            container.innerHTML = filtered.map(s => `
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span class="trainer-badge" style="font-size: 0.72rem;">${s.difficulty}</span>
+                            <span style="font-size: 0.78rem; color: var(--text-dim);">${s.category}</span>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">${s.title}</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">From: ${s.sender_name} &lt;${s.sender_email}&gt;</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="inspectPhishingScenario(${s.id})">🔍 Inspect & Defend</button>
+                </div>
+            `).join('');
+        }
+
+        function filterPhishing(tier) {
+            renderPhishingCatalog(tier);
+        }
+
+        let activePhishId = 1;
+        function inspectPhishingScenario(id) {
+            const sc = PHISHING_SCENARIOS.find(s => s.id === id);
+            if (!sc) return;
+            activePhishId = id;
+
+            document.getElementById('phish-title').textContent = sc.title;
+            document.getElementById('phish-tier-badge').textContent = `${sc.difficulty} • ${sc.category}`;
+            document.getElementById('phish-from').textContent = `${sc.sender_name} <${sc.sender_email}>`;
+            document.getElementById('phish-replyto').textContent = sc.reply_to || 'None (matches From)';
+            document.getElementById('phish-subject').textContent = sc.subject;
+            document.getElementById('phish-dest-url').textContent = sc.simulated_url || 'No external URL (Local Attachment)';
+            document.getElementById('phish-body-content').innerHTML = sc.body_html;
+
+            const portalTrig = document.getElementById('phish-portal-trigger');
+            if (sc.fake_portal_type) {
+                portalTrig.style.display = 'block';
+            } else {
+                portalTrig.style.display = 'none';
+            }
+
+            const indContainer = document.getElementById('phish-indicators-list');
+            indContainer.innerHTML = sc.indicators.map((ind, i) => `
+                <label style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; cursor: pointer;">
+                    <input type="checkbox" name="phish-ind" value="${ind}">
+                    <span>${ind}</span>
+                </label>
+            `).join('');
+
+            document.getElementById('phishing-active-panel').style.display = 'block';
+            document.getElementById('phishing-active-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePhishingActivePanel() {
+            document.getElementById('phishing-active-panel').style.display = 'none';
+        }
+
+        function submitPhishVerdict(verdictIsPhish) {
+            const sc = PHISHING_SCENARIOS.find(s => s.id === activePhishId);
+            const isCorrect = (verdictIsPhish === sc.is_phishing);
+            showToast(isCorrect ? 'Correct Analysis! Phishing neutralized (+75 XP)' : 'Evaluation Incomplete: Threat succeeded', isCorrect ? '✅' : '⚠️');
+            closePhishingActivePanel();
+        }
+
+        function openSimulatedPortal() {
+            const sc = PHISHING_SCENARIOS.find(s => s.id === activePhishId);
+            const modal = document.getElementById('simulated-portal-modal');
+            const body = document.getElementById('simulated-portal-body');
+            
+            if (sc.fake_portal_type === 'm365') {
+                body.innerHTML = `
+                    <div style="text-align: left;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #0078D4; margin-bottom: 0.75rem;">Microsoft</div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.35rem;">Sign In</h3>
+                        <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 1rem;">to access your institutional organization portal</p>
+                        <input type="email" class="form-control" style="border: 1px solid #CBD5E1; color: #0F172A; background: #F8FAFC; margin-bottom: 1rem;" placeholder="Email, phone, or Skype" value="dhriti@campus.edu">
+                        <button class="btn btn-primary" style="background: #0078D4; width: 100%; border-radius: 2px;">Next &rarr;</button>
+                        <div style="margin-top: 1.25rem; font-size: 0.75rem; color: #DC2626; background: #FEF2F2; padding: 0.6rem; border-radius: 4px;">
+                            ⚠️ <strong>Sandboxed Preview:</strong> Notice the address bar destination domain (.top) rather than authentic login.microsoftonline.com.
+                        </div>
+                    </div>
+                `;
+            } else if (sc.fake_portal_type === 'workday') {
+                body.innerHTML = `
+                    <div style="text-align: left;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: #005CB9; margin-bottom: 0.75rem;">workday.</div>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Corporate Employee Single Sign-On</h3>
+                        <input type="text" class="form-control" style="border: 1px solid #CBD5E1; color: #0F172A; background: #F8FAFC; margin-bottom: 0.75rem;" placeholder="Corporate User ID">
+                        <input type="password" class="form-control" style="border: 1px solid #CBD5E1; color: #0F172A; background: #F8FAFC; margin-bottom: 1rem;" placeholder="Password">
+                        <button class="btn btn-primary" style="background: #005CB9; width: 100%;">Sign In</button>
+                    </div>
+                `;
+            } else {
+                body.innerHTML = `
+                    <div style="text-align: center;">
+                        <h3>Simulated Destination Preview</h3>
+                        <p style="color: #64748B; font-size: 0.9rem; margin-top: 0.5rem;">Target destination is a sandboxed credential harvester.</p>
+                    </div>
+                `;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeSimulatedPortal() {
+            document.getElementById('simulated-portal-modal').style.display = 'none';
+        }
+
+        /* ----------------------------------------------------
+           6. CTF MISSIONS ENGINE
+        ---------------------------------------------------- */
+        function renderCtfGrid(filterCat = 'ALL') {
+            const container = document.getElementById('ctf-challenges-grid');
+            if (!container) return;
+
+            let filtered = CTF_CHALLENGES;
+            if (filterCat !== 'ALL') {
+                filtered = CTF_CHALLENGES.filter(c => c.category === filterCat);
+            }
+
+            container.innerHTML = filtered.map(c => {
+                const isSolved = solvedCtfIds.includes(c.id);
+                return `
+                    <div class="card" style="border-color: ${isSolved ? 'var(--accent-emerald)' : 'var(--border-subtle)'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span class="trainer-badge" style="font-size: 0.72rem; border-color: #8B5CF6; color: #C4B5FD;">${c.category} • ${c.difficulty}</span>
+                            <span style="font-weight: 700; color: #FBBF24; font-size: 0.88rem;">+${c.points} PTS</span>
+                        </div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.4rem;">${c.title}</h3>
+                        <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1rem;">${c.desc}</p>
+
+                        <!-- ARTIFACT VIEWER -->
+                        <div style="background: #0B1120; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; font-family: monospace; font-size: 0.8rem; color: #A5F3FC; white-space: pre-wrap; word-break: break-all; margin-bottom: 1rem; max-height: 140px; overflow-y: auto;">
+                            ${c.artifact}
+                        </div>
+
+                        ${isSolved ? `
+                            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid var(--accent-emerald); color: #6EE7B7; padding: 0.65rem; border-radius: var(--radius-sm); text-align: center; font-weight: 700; font-size: 0.88rem;">
+                                ✓ SOLVED &bull; ${c.points} PTS AWARDED
+                            </div>
+                        ` : `
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="flag-input-${c.id}" class="form-control" style="font-size: 0.85rem;" placeholder="FLAG{...}">
+                                <button class="btn btn-primary btn-sm" onclick="verifyCtfFlag(${c.id})">Submit</button>
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterCtf(cat) {
+            renderCtfGrid(cat);
+        }
+
+        function verifyCtfFlag(challengeId) {
+            const input = document.getElementById(`flag-input-${challengeId}`);
+            if (!input) return;
+            const submitted = input.value.trim();
+            const challenge = CTF_CHALLENGES.find(c => c.id === challengeId);
+
+            if (challenge && submitted.toLowerCase() === challenge.flag.toLowerCase()) {
+                if (!solvedCtfIds.includes(challengeId)) {
+                    solvedCtfIds.push(challengeId);
+                    ctfScore += challenge.points;
+                    localStorage.setItem('tv_ctf_solved', JSON.stringify(solvedCtfIds));
+                    localStorage.setItem('tv_ctf_score', ctfScore.toString());
+                    document.getElementById('ctf-score-display').textContent = ctfScore;
+                }
+                showToast(`Flag Accepted! +${challenge.points} PTS awarded to your trainer score!`, '🚩');
+                renderCtfGrid();
+            } else {
+                showToast('Incorrect Flag. Inspect the artifact string and try again.', '❌');
+            }
+        }
+
+        /* ----------------------------------------------------
+           7. INCIDENT RESPONSE WAR ROOM
+        ---------------------------------------------------- */
+        function renderWarRoomCatalog() {
+            const container = document.getElementById('war-room-selector');
+            if (!container) return;
+
+            container.innerHTML = WAR_ROOM_SCENARIOS.map(w => `
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <span class="trainer-badge" style="border-color: #F43F5E; color: #FDA4AF; font-size: 0.72rem; margin-bottom: 0.5rem;">INCIDENT</span>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem;">${w.title}</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Adversary: ${w.threat_actor}</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="launchWarRoomScenario('${w.code}')">🚨 Assume Command</button>
+                </div>
+            `).join('');
+        }
+
+        let activeWarRoomMission = null;
+        let currentWarRoomStageIdx = 0;
+        let warRoomSecScore = 100;
+        let warRoomPenalty = 0;
+
+        function launchWarRoomScenario(code) {
+            const mission = WAR_ROOM_SCENARIOS.find(m => m.code === code);
+            if (!mission) return;
+
+            activeWarRoomMission = mission;
+            currentWarRoomStageIdx = 0;
+            warRoomSecScore = 100;
+            warRoomPenalty = 0;
+
+            document.getElementById('wr-threat-actor').textContent = mission.threat_actor;
+            document.getElementById('wr-scenario-title').textContent = mission.title;
+            document.getElementById('war-room-active-stage').style.display = 'block';
+
+            renderWarRoomStage();
+            document.getElementById('war-room-active-stage').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderWarRoomStage() {
+            const stage = activeWarRoomMission.stages[currentWarRoomStageIdx];
+            document.getElementById('wr-stage-heading').textContent = stage.title;
+            document.getElementById('wr-stage-situation').textContent = stage.situation;
+            document.getElementById('wr-security-score').textContent = warRoomSecScore;
+            document.getElementById('wr-penalty-score').textContent = warRoomPenalty;
+            document.getElementById('wr-consequence-box').style.display = 'none';
+
+            const opts = document.getElementById('wr-options-container');
+            opts.innerHTML = stage.options.map(opt => `
+                <button class="btn btn-secondary" style="text-align: left; justify-content: flex-start; padding: 0.85rem 1rem; line-height: 1.4;" onclick="executeWarRoomChoice('${opt.id}')">
+                    <strong>[Option ${opt.id}]:</strong> ${opt.text}
+                </button>
+            `).join('');
+        }
+
+        function executeWarRoomChoice(optId) {
+            const stage = activeWarRoomMission.stages[currentWarRoomStageIdx];
+            const choice = stage.options.find(o => o.id === optId);
+
+            const cBox = document.getElementById('wr-consequence-box');
+            const cText = document.getElementById('wr-consequence-text');
+            const nextBtn = document.getElementById('btn-wr-next-stage');
+
+            if (choice.correct) {
+                cBox.style.background = 'rgba(16, 185, 129, 0.15)';
+                cBox.style.borderColor = 'var(--accent-emerald)';
+            } else {
+                cBox.style.background = 'rgba(244, 63, 94, 0.15)';
+                cBox.style.borderColor = 'var(--accent-rose)';
+                warRoomSecScore = Math.max(20, warRoomSecScore - 30);
+                warRoomPenalty += 30;
+                document.getElementById('wr-security-score').textContent = warRoomSecScore;
+                document.getElementById('wr-penalty-score').textContent = warRoomPenalty;
+            }
+
+            cText.textContent = choice.consequence;
+            cBox.style.display = 'block';
+
+            if (currentWarRoomStageIdx < activeWarRoomMission.stages.length - 1) {
+                nextBtn.textContent = 'Advance to Next Stage &rarr;';
+                nextBtn.onclick = () => {
+                    currentWarRoomStageIdx++;
+                    renderWarRoomStage();
+                };
+            } else {
+                nextBtn.textContent = 'Finalize NIST After-Action Report 📜';
+                nextBtn.onclick = () => {
+                    showToast('Mission Finalized! NIST SP 800-61 Rev. 2 Grade: Grade A (Master Defender)', '🚨');
+                    document.getElementById('war-room-active-stage').style.display = 'none';
+                };
+            }
+        }
+
+        /* ----------------------------------------------------
+           8. AI THREAT ANALYST & INSPECTOR
+        ---------------------------------------------------- */
+        function loadAnalystSample(sampleId) {
+            const input = document.getElementById('ai-telemetry-input');
+            if (sampleId === 1) {
+                input.value = "CRITICAL: Student Portal will be terminated within 2 hours. Authenticate at https://campus-security-auth.net/emergency-verify?user=student";
+            } else {
+                input.value = "CONFIDENTIAL from Dean: Currently in board meeting with no phone access. Please purchase five $100 Apple gift cards and reply with scratch-off codes.";
+            }
+        }
+
+        function runAnalystScan() {
+            const text = document.getElementById('ai-telemetry-input').value.trim();
+            if (!text) {
+                showToast('Please enter text or email body to scan.', '⚠️');
+                return;
+            }
+
+            const output = document.getElementById('ai-report-output');
+            const isThreat = /immediate|urgent|gift card|hours|verify|suspend|deactivat/i.test(text);
+
+            output.innerHTML = `
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 style="font-size: 1.1rem; font-weight: 700; color: #fff;">AI Telemetry Diagnostic Report</h4>
+                        <span class="trainer-badge" style="border-color: ${isThreat ? '#F43F5E' : '#10B981'}; color: ${isThreat ? '#FDA4AF' : '#6EE7B7'};">
+                            ${isThreat ? 'MALICIOUS INDICATORS CONFIRMED' : 'BENIGN TELEMETRY'}
+                        </span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; font-size: 0.88rem;">
+                        <div><span style="color: var(--text-muted);">MITRE Technique:</span> <strong style="color: var(--brand-cyan);">${isThreat ? 'T1566.002 Spearphishing Link' : 'T0000 Informational'}</strong></div>
+                        <div><span style="color: var(--text-muted);">Calculated CVSS:</span> <strong style="color: #F87171;">${isThreat ? '8.8 HIGH' : '0.0 NONE'}</strong></div>
+                        <div><span style="color: var(--text-muted);">Attacker Heuristic:</span> <strong>${isThreat ? 'Urgency & Hierarchical Coercion' : 'Authentic Notice'}</strong></div>
+                    </div>
+                    <div style="font-size: 0.9rem; line-height: 1.6; color: #E2E8F0;">
+                        ${isThreat 
+                            ? "<strong>Adversary Mechanics:</strong> The text leverages high-pressure urgency markers to induce cognitive tunnel vision, aiming to bypass standard multi-factor verification workflows."
+                            : "No malicious patterns or deceptive persuasion hooks detected in the submitted telemetry snippet."}
+                    </div>
+                </div>
+            `;
+            output.style.display = 'block';
+            showToast('AI Threat Report Generated Successfully', '🧠');
+        }
+
+        /* ----------------------------------------------------
+           9. REAL-TIME AI LINK & FILE INSPECTOR MODAL
+        ---------------------------------------------------- */
+        function openInspectorModal() {
+            document.getElementById('inspector-modal-backdrop').style.display = 'flex';
+        }
+
+        function closeInspectorModal() {
+            document.getElementById('inspector-modal-backdrop').style.display = 'none';
+        }
+
+        function loadInspectorSample(isThreat) {
+            const input = document.getElementById('inspector-modal-text');
+            if (isThreat) {
+                input.value = "CRITICAL: Your account is scheduled for termination within 60 minutes! Re-verify credentials immediately at http://secure-identity-auth.xyz/login";
+            } else {
+                input.value = "Reminder: Scheduled library digital repository maintenance this Sunday from 02:00 to 04:00 AM UTC. No login or password reset required.";
+            }
+        }
+
+        function handleInspectorFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const dropText = document.getElementById('dropzone-text');
+            dropText.innerHTML = `
+                <span style="font-size: 1.5rem;">📄</span>
+                <div style="font-weight: 700; margin-top: 0.25rem;">${file.name}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">${(file.size / 1024).toFixed(1)} KB &bull; Loaded for scanning</div>
+            `;
+
+            // Auto inspect double extension
+            if (/\.(pdf|png|jpg)\.(exe|vbs|scr|bat)$/i.test(file.name)) {
+                document.getElementById('inspector-modal-text').value = `[FILE UPLOAD CHECK]: ${file.name} (CRITICAL: Double extension executable detected!)`;
+            }
+        }
+
+        function executeInspectorAnalysis() {
+            const text = document.getElementById('inspector-modal-text').value.trim();
+            const results = document.getElementById('inspector-modal-results');
+            const banner = document.getElementById('inspector-result-banner');
+            const icon = document.getElementById('inspector-result-icon');
+            const status = document.getElementById('inspector-result-status');
+            const scoreText = document.getElementById('inspector-result-score-text');
+            const meterPct = document.getElementById('inspector-meter-pct');
+            const meterFill = document.getElementById('inspector-meter-fill');
+            const flagsContainer = document.getElementById('inspector-flags-container');
+            const guidance = document.getElementById('inspector-guidance-text');
+
+            if (!text) {
+                showToast('Please paste content or upload a file to analyze.', '⚠️');
+                return;
+            }
+
+            let risk = 12;
+            let detectedFlags = [];
+
+            if (/immediate|urgent|within (2|1|24) hours|within 60/i.test(text)) {
+                risk += 35;
+                detectedFlags.push("Artificial Urgency / Time Constraint pressure");
+            }
+            if (/verify|password|credential|pin|token|login/i.test(text)) {
+                risk += 25;
+                detectedFlags.push("Credential Harvesting or secret solicitation indicator");
+            }
+            if (/\.xyz|\.top|\.biz|\.cc|\.click|\.ru/i.test(text)) {
+                risk += 30;
+                detectedFlags.push("Untrusted / Typosquatted top-level domain (.xyz/.top/.biz/.cc)");
+            }
+            if (/gift card|apple card|wire transfer|bitcoin/i.test(text)) {
+                risk += 40;
+                detectedFlags.push("Irreversible monetary or gift card scam hallmark");
+            }
+            if (/\.pdf\.exe|\.exe|\.scr/i.test(text)) {
+                risk = 99;
+                detectedFlags.push("CRITICAL: Double extension or executable malware payload");
+            }
+
+            risk = Math.min(100, risk);
+
+            meterPct.textContent = `${risk}%`;
+            meterFill.style.width = `${risk}%`;
+            scoreText.textContent = `Calculated Threat Likelihood: ${risk}%`;
+
+            if (risk > 60) {
+                banner.style.background = 'var(--accent-rose-bg)';
+                banner.style.border = '1px solid var(--accent-rose-border)';
+                icon.textContent = '🚨';
+                status.textContent = 'HIGH THREAT DETECTED';
+                meterFill.style.background = 'var(--accent-rose)';
+                guidance.textContent = "Do NOT click embedded links or open attachments. Report this communication directly to your institutional Security Operations Center.";
+            } else if (risk > 30) {
+                banner.style.background = 'var(--accent-amber-bg)';
+                banner.style.border = '1px solid var(--accent-amber-border)';
+                icon.textContent = '⚠️';
+                status.textContent = 'SUSPICIOUS ELEMENTS DETECTED';
+                meterFill.style.background = 'var(--accent-amber)';
+                guidance.textContent = "Review sender headers carefully and verify through independent communication channels.";
+            } else {
+                banner.style.background = 'var(--accent-emerald-bg)';
+                banner.style.border = '1px solid var(--accent-emerald-border)';
+                icon.textContent = '🛡️';
+                status.textContent = 'NO HIGH-RISK INDICATORS DETECTED';
+                meterFill.style.background = 'var(--accent-emerald)';
+                guidance.textContent = "Content appears consistent with benign communications. Always maintain healthy security vigilance.";
+            }
+
+            if (detectedFlags.length) {
+                flagsContainer.innerHTML = detectedFlags.map(f => `
+                    <div style="background: rgba(244, 63, 94, 0.1); border-left: 3px solid #F43F5E; padding: 0.45rem 0.75rem; border-radius: 4px; font-size: 0.85rem; color: #FDA4AF;">
+                        ⚠️ ${f}
+                    </div>
+                `).join('');
+            } else {
+                flagsContainer.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-muted);">No prominent red flags identified.</div>`;
+            }
+
+            results.style.display = 'block';
+        }
+
+        /* ----------------------------------------------------
+           10. LEADERBOARD
+        ---------------------------------------------------- */
+        const LEADERBOARD_DATA = [
+            { rank: 1, name: "Ms. Dhriti Gupta", badge: "Master Defender 🛡️", solved: 18, accuracy: "96.2%", speed: "4.2s", score: 2840 },
+            { rank: 2, name: "Marcus Vance", badge: "Cyber Specialist ⚔️", solved: 15, accuracy: "93.3%", speed: "5.1s", score: 2410 },
+            { rank: 3, name: "Alex Chen", badge: "Cyber Specialist ⚔️", solved: 14, accuracy: "89.5%", speed: "4.8s", score: 2180 },
+            { rank: 4, name: "Sarah Lin", badge: "Security Cadet 🔰", solved: 11, accuracy: "81.8%", speed: "6.2s", score: 1720 },
+            { rank: 5, name: "David Kim", badge: "Security Cadet 🔰", solved: 9, accuracy: "77.8%", speed: "7.0s", score: 1390 }
+        ];
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = LEADERBOARD_DATA.map(user => {
+                const isCurrent = user.name.toLowerCase().includes(activeTrainer.toLowerCase()) || activeTrainer.toLowerCase().includes('dhriti');
+                return `
+                    <tr style="${isCurrent ? 'background: rgba(59, 130, 246, 0.15); border-left: 4px solid var(--brand-blue);' : ''}">
+                        <td style="font-weight: 800; font-size: 1.1rem; color: ${user.rank === 1 ? '#FBBF24' : '#94A3B8'};">#${user.rank}</td>
+                        <td>
+                            <strong style="color: ${isCurrent ? '#93C5FD' : '#F8FAFC'};">${user.name}</strong>
+                            ${isCurrent ? '<span class="trainer-badge" style="font-size: 0.65rem; margin-left: 0.4rem; padding: 0.1rem 0.4rem;">YOU (TRAINER)</span>' : ''}
+                        </td>
+                        <td><span class="trainer-badge" style="font-size: 0.75rem;">${user.badge}</span></td>
+                        <td><strong>${user.solved}</strong> Drills</td>
+                        <td style="color: var(--brand-cyan); font-weight: 700;">${user.accuracy}</td>
+                        <td>${user.speed}</td>
+                        <td style="font-weight: 800; color: #FBBF24;">${user.score} PTS</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterLeaderboard() {
+            const query = document.getElementById('leaderboard-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#leaderboard-tbody tr');
+            rows.forEach(r => {
+                r.style.display = r.textContent.toLowerCase().includes(query) ? '' : 'none';
+            });
+        }
+
+        /* ----------------------------------------------------
+           11. CERTIFICATION MODAL
+        ---------------------------------------------------- */
+        function openCertificateModal() {
+            document.getElementById('certificate-modal').style.display = 'flex';
+        }
+        function closeCertificateModal() {
+            document.getElementById('certificate-modal').style.display = 'none';
+        }
+
+        /* ----------------------------------------------------
+           12. INITIALIZATION ON PAGE LOAD
+        ---------------------------------------------------- */
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check login state
+            if (isLoggedIn) {
+                document.getElementById('app-navbar').style.display = 'flex';
+                updateTrainerHeader();
+                const hash = window.location.hash.replace('#', '') || 'dashboard';
+                navigateTo(hash);
+            } else {
+                document.getElementById('app-navbar').style.display = 'none';
+                navigateTo('login');
+            }
+        });
+
+        // Listen for browser back/forward buttons
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.replace('#', '') || 'dashboard';
+            navigateTo(hash);
+        });
+    </script>
+</body>
+</html>
